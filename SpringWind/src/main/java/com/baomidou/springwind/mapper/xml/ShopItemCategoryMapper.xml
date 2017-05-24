@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopItemCategoryMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopItemCategory">
+		<id column="id" property="id" />
+		<result column="category_level" property="categoryLevel" />
+		<result column="category_name" property="categoryName" />
+		<result column="pid" property="pid" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopItemCategory">
+		<id column="id" property="id" />
+		<result column="category_level" property="categoryLevel" />
+		<result column="category_name" property="categoryName" />
+		<result column="pid" property="pid" />
+		<association property="shopItemCategory" javaType="ShopItemCategory">
+			<id column="id" property="id" />
+			<result column="category_level" property="categoryLevel" />
+			<result column="category_name" property="categoryName" />
+			<result column="pid" property="pid" />
+		</association>
+	</resultMap>
+
+	<select id="selectMultiShopItemCategoryList" resultMap="multiResultMap" >
+		SELECT  sicd.id ,sicd.category_name ,sicy.category_name ,sicy.id
+		FROM shop_item_category sicd
+		LEFT JOIN shop_item_category sicy on sicd.pid=sicy.id WHERE sicy.id is not NULL
+		<if test=" subId != null ">
+		AND sicd.id=#{subId}
+		</if>
+		ORDER BY sicd.id
+		LIMIT #{_index},#{_size}
+	</select>
+	<select id="selectMultiShopItemCategoryCount" resultType="int" >
+		SELECT COUNT( sicd.id) cnt
+		FROM shop_item_category sicd
+		LEFT JOIN shop_item_category sicy on sicd.pid=sicy.id WHERE sicy.id is not NULL
+		<if test=" subId != null ">
+			AND sicd.id=#{subId}
+		</if>
+	</select>
+</mapper>

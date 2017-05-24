@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 100%;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+       <div class="form-group"><label class="col-sm-4 control-label">用户名称：</label>
+      		<div class="col-sm-8">
+                    <input type="hidden" value="$!{refund.id}" name="id">
+                <label class=" control-label">$!{refund.shopUser.nickname}</label>
+                    <!--<input value="$!{shopOrder.orderCode}" class="col-sm-6 form-control" style="background-color:transparent;outline:none" readonly="true">-->
+                <!--<span value="$!{shopOrder.orderCode}" class="col-sm-6 form-control" style="background-color:transparent">$!{shopOrder.orderCode}</span>-->
+      		</div>
+       </div>
+        <div class="form-group"><label class="col-sm-4 control-label">商品名称：</label>
+            <div class="col-sm-8">
+                <label class=" control-label">$!{refund.shopItem.itemName}</label>
+            </div>
+        </div>
+       <div class="form-group"><label class="col-sm-4 control-label">订单号：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{refund.shopOrder.orderCode}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">申请退货日期：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{refund.createDate}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">商品数量：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{refund.shopOrderItem.count}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">退货金额(单位/元)：</label>
+           <div class="col-sm-4">
+               <!--<input name="freight" type="hidden" id="freight">-->
+               <label class=" control-label" id="refundCharge" >$!{refund.refundCharge}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">退货状态：</label>
+           <div class="col-sm-4">
+               <select name="refundState" class="form-control" id="refundState">
+                   <option value="0"  #if($!{refund.refundState}==0) selected="selected" #end >退货中</option>
+                   <option value="1"  #if($!{refund.refundState}==1) selected="selected" #end >退货完成</option>
+                   <option value="2"  #if($!{refund.refundState}==2) selected="selected" #end >退货失败</option>
+               </select>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">退货类型：</label>
+           <div class="col-sm-8"><!--商品详情图片--><!--value="$!{shopOrder.createDate}"-->
+               <label id="refundType" class=" control-label">
+                   #if($!{refund.refundType}==0) 退货退款
+                   #end
+                   #if($!{refund.refundType}==1) 退货
+                   #end
+                   #if($!{refund.refundType}==2) 退款
+                   #end
+               </label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">反馈信息：</label>
+           <div class="col-sm-8">
+                   <table id="dataTable" ></table>
+           </div>
+       </div>
+        <div class="form-group"><label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8">
+                <div class="col-sm-12 text-right">
+				        <button type="submit" class="btn btn-info"  >确定</button>
+				        <button type="button" class="btn btn-info" onclick="cancelRefundDetail()" >取消</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/jquery-ui.custom.min.js')"></script>
+<script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list_a.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+
+    var charge = $("#refundCharge").html();
+    $("#refundCharge").html((charge/100).toFixed(2));
+    function cancelRefundDetail(){
+        var index = parent.layer.getFrameIndex(window.name);
+        parent.layer.close(index);
+    }
+
+    var Request = {
+        QueryString : function(val) {
+            var uri = window.location.search;
+            var re = new RegExp("" +val+ "=([^&?]*)", "ig");
+            return ((uri.match(re))?(uri.match(re)[0].substr(val.length+1)):"");
+        }
+    }
+    var userRefundId = Request.QueryString("refundId");
+    var dataUrl = "#springUrl('/operate/refund/feedback/detail')?userRefundId="+userRefundId;
+    var dataColumns = [  {
+        field: 'createDate',
+        title: '反馈日期'
+    },{
+        field: 'message',
+        title: '信息描述'
+    }, {
+        field: 'from',
+        title: '反馈来源',
+        formatter:function(value,row,index){
+            return showFeedbackFrom(value);
+        }
+    },{
+        field: 'imageAddr',
+        title: '附带图片',
+        formatter:function(value,row,index){
+            return '<img src="'+value+'" style="display:block;width:30px;height:30px"/>';
+        }
+    }
+    ];
+
+    function showFeedbackFrom(num){
+        if(num==0){
+            return "客户反馈"
+        }
+        if(num==1){
+            return "客服反馈"
+        }
+        if(num==2){
+            return "库房反馈"
+        }
+        if(num==3){
+            return "商城反馈"
+        }
+        if(num==4){
+            return "客户经理反馈"
+        }
+
+    }
+
+    $("#myForm").validator({
+        valid: function(form){
+            var me = this;
+            me.holdSubmit();
+            $.ajax({
+                url: "#springUrl('/operate/refund/update')",
+                data: $(form).serialize(),
+                type: "POST",
+                success: function(data){
+                    var d = JSON.parse(data);
+                    if(d.success&&d.data ){
+                        window.parent.location.reload();
+                        //当你在iframe页面关闭自身时
+                        //var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        //parent.layer.close(index); //再执行关闭
+                    } else {
+                        //失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                        me.holdSubmit(false);
+                    }
+                }
+            });
+        }
+    });
+
+
+
+</script>
+</body>
+</html>

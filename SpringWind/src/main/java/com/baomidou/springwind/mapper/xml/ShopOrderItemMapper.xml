@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopOrderItemMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopOrderItem">
+		<id column="id" property="id" />
+		<result column="order_id" property="orderId" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="price" property="price" />
+		<result column="count" property="count" />
+		<result column="state" property="state" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopOrderItem">
+		<id column="id" property="id" />
+		<result column="order_id" property="orderId" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="price" property="price" />
+		<result column="count" property="count" />
+		<result column="state" property="state" />
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+			<result column="item_icon_addr" property="itemIconAddr" />
+			<result column="info_image_addrs" property="infoImageAddrs" />
+		</association>
+		<association property="shopItemCategory" javaType="ShopItemCategory">
+			<id column="id" property="id" />
+			<result column="category_level" property="categoryLevel" />
+			<result column="category_name" property="categoryName" />
+			<result column="pid" property="pid" />
+		</association>
+		<association property="shopItemProperties" javaType="ShopItemProperties">
+			<id column="id" property="id" />
+			<result column="item_id" property="itemId" />
+			<result column="property_key" property="propertyKey" />
+			<result column="property_value" property="propertyValue" />
+			<result column="property_desc" property="propertyDesc" />
+		</association>
+	</resultMap>
+
+
+	<select id="selectOrderItemListByOrderId"  resultMap="BaseResultMap" >
+	SELECT
+	* FROM shop_order_item  WHERE order_id = #{orderId}
+	</select>
+	<!--查询订单数量-->
+	<select id="selectByItemId" resultType="java.lang.Integer">
+		SELECT  COUNT(order_id) FROM shop_order_item
+		WHERE item_id=#{item_id}
+	</select>
+
+	<!--查询订单详情-->
+	<select id="selectMultiOrderItemList" resultMap="multiResultMap">
+		SELECT soi.item_id,soi.order_id,sum(soi.count)cnt , soi.price,si.id,si.item_name,si.item_icon_addr,sic.category_name
+		FROM shop_order_item soi LEFT JOIN shop_item si ON soi.item_id=si.id
+		LEFT JOIN shop_item_category sic ON si.item_category_primary=sic.id
+		<if test=" orderId != null ">
+			WHERE soi.order_id=#{orderId}
+		</if>
+		GROUP BY soi.item_id
+	</select>
+
+	<!--查询订单详情里商品的数量-->
+	<select id="selectMultiOrderItemCount" resultType="int">
+		SELECT sum(soi.count) cnt
+		FROM shop_order_item soi LEFT JOIN shop_item si ON soi.item_id=si.id
+		LEFT JOIN shop_item_category sic ON si.item_category_primary=sic.id
+		<if test=" orderId != null ">
+			WHERE soi.order_id=#{orderId}
+		</if>
+		<if test=" ItemId != null ">
+			WHERE si.id=#{ItemId}
+		</if>
+		GROUP BY sic.category_level
+	</select>
+
+	<!--查询订单详情里的商品属性-->
+	<select id="selectMultiOrderItemPropertiesList" resultMap="multiResultMap">
+		SELECT soi.id,soi.item_id,soi.order_id,soi.count,soi.price,si.id,si.item_name,si.item_icon_addr,sic.category_name,sip.property_desc,sip.id
+		FROM shop_order_item soi LEFT JOIN shop_item si ON soi.item_id=si.id AND soi.state=0
+		LEFT JOIN shop_item_category sic ON si.item_category_primary=sic.id
+		LEFT JOIN shop_order_item_properties soip ON soip.order_item_id=soi.id AND soip.order_id=soi.order_id AND soip.item_id=soi.item_id
+		LEFT JOIN shop_item_properties sip ON sip.item_id=soi.item_id AND soip.item_id=sip.item_id AND soip.property_key=sip.property_key
+		<if test=" orderId != null ">
+			WHERE soi.order_id=#{orderId}
+		</if>
+	</select>
+
+	<!--订单详情列表-->
+	<!--
+	SELECT soi.id,soi.count,soi.item_id,soi.order_id,soi.price,so.create_date,so.express_code,so.order_code,
+	so.order_state,so.order_total,so.freight,so.user_id,si.item_name,sip.property_desc,sip.property_key,sip.property_value
+	FROM shop_order_item soi LEFT JOIN shop_order so ON soi.order_id=so.id
+	LEFT JOIN shop_item si ON soi.item_id=si.id
+	LEFT JOIN shop_order_item_properties soip ON  soip.order_id=soi.order_id AND soi.item_id=soip.item_id
+	LEFT JOIN shop_item_properties sip on soip.item_id=sip.item_id AND  soip.property_key=sip.property_key AND soip.property_value=sip.property_value
+	WHERE soi.order_id=23
+	LIMIT 0,10
+	-->
+</mapper>

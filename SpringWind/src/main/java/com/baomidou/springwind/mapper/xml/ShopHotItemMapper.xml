@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopHotItemMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopHotItem">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="item_name" property="itemName" />
+		<result column="item_icon_addr" property="itemIconAddr" />
+		<result column="evaluate_count" property="evaluateCount" />
+		<result column="grade" property="grade" />
+		<result column="price" property="price" />
+		<result column="advantage" property="advantage" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="session_no" property="sessionNo"/>
+		<result column="amount" property="amount"/>
+		<result column="create_date" property="createDate"/>
+	</resultMap>
+	<select id="selectShopHotItemLimit" parameterType="int" resultMap="BaseResultMap" >
+		SELECT shi.id,shi.item_id,shi.item_name,shi.item_icon_addr,shi.evaluate_count,shi.grade,shi.price,shi.advantage,shi.sort_factor,shi.session_no,shi.amount,shi.create_date
+		FROM
+		shop_hot_item AS shi
+		where shi.session_no =(select max(session_no)
+		from shop_hot_item )
+		LIMIT #{_index},#{_size}
+	</select>
+	<select id="selectUpdateShopHotItemList" parameterType="date" resultMap="BaseResultMap">
+		select soi.item_id,si.item_name, sum(soi.count) itemcount, soi.price,count(sie.item_id) evaluatecount,sie.grade,sie.advantage
+		from shop_order so
+		LEFT JOIN shop_order_item soi on so.id=soi.item_id
+		LEFT JOIN shop_item si on soi.item_id=si.id
+		LEFT JOIN shop_item_evaluate sie on si.id=sie.item_id
+		where  #{orderCreateDate} >= so.create_date
+		GROUP BY si.id
+		order by itemcount desc
+		LIMIT 0,50
+	</select>
+
+	<!--统计查询爆款商品列表-->
+	<select id="selectStatisticShopHotItemList" resultMap="BaseResultMap">
+		SELECT sum(z.count) amount ,z.item_id , si.item_name,si.price,si.item_icon_addr,sie.advantage advantage,sie.grade ,zz.evaluate_count evaluate_count from(SELECT soip.id,soip.count,soip.item_id,soip.order_id,soip.price FROM shop_order_item_properties soip GROUP BY soip.order_id) z
+		LEFT JOIN shop_order so ON z.order_id=so.id
+		LEFT JOIN shop_item si ON z.item_id=si.id
+		LEFT JOIN shop_item_evaluate sie ON z.item_id=sie.item_id
+		LEFT JOIN (SELECT sie.id, count(sie.user_id) evaluate_count,sie.item_id FROM shop_item_evaluate sie GROUP BY sie.item_id)zz ON sie.item_id=zz.item_id
+		WHERE so.create_date BETWEEN  #{startDate} AND #{endDate}
+		GROUP BY z.item_id ORDER BY  si.sort_factor ASC
+		LIMIT #{limitCount}
+	</select>
+
+	<select id="getMaxSessionNo" resultType="int">
+		select max(session_no) from shop_hot_item
+	</select>
+	<select id="getMaxSessionNoHotItem" resultMap="BaseResultMap" >
+		select shi.item_id,shi.item_name,shi.item_icon_addr,shi.evaluate_count,shi.grade,shi.price,shi.advantage,shi.sort_factor,shi.session_no,shi.amount,shi.create_date
+		from shop_hot_item shi where session_no=(select max(session_no) from shop_hot_item)
+	</select>
+
+	<!--获得某期爆款的最大创建时间-->
+	<select id="selectMaxCreateDate" resultType="date">
+		SELECT MAX(shi.create_date) creat_date FROM shop_hot_item shi WHERE shi.session_no=#{sessionNo}
+	</select>
+
+	<!--根据订单的时间查询某一段时间内的爆款商品-->
+	<!--<select id="select">
+		SELECT sum(z.count) amount ,z.item_id from(SELECT soip.id,soip.count,soip.item_id,soip.order_id,soip.price FROM shop_order_item_properties soip GROUP BY soip.order_id) z
+		LEFT JOIN shop_order so ON z.order_id=so.id AND so.create_date BETWEEN #{startDate} AND #{endDate}
+		GROUP BY z.item_id
+	</select>-->
+
+
+	<!--更具id和期数删除数据-->
+	<delete id="delShopHotItemByIdAndSessionNo" parameterType="int" >
+		delete FROM shop_hot_item where id=#{id} and session_no=#{sessionNo}
+	</delete>
+	<!--通过期数分组-->
+	<select id="selectHotItemSessionNoAndDate" resultMap="BaseResultMap" >
+		SELECT session_no,create_date FROM shop_hot_item shi GROUP BY session_no order by session_no desc
+	</select>
+	<!--获取当前最大期数-->
+	<select id="selectMaxSeaNo" resultType="java.lang.String">
+     SELECT MAX(session_no) FROM shop_hot_item
+	</select>
+ </mapper>

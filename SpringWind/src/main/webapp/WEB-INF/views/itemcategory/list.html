@@ -1,0 +1,91 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>商品分类维护</a></li><li class="active"><strong>商品分类维护</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<!--<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>-->
+		</div>
+		<button class="btn btn-primary" onclick="addCategory(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加分类</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/item/itemcategory/getShopItemCategoryList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'categoryLevel',
+        title: '分类级别'
+    }, {
+        field: 'categoryName',
+        title: '分类名称'
+    },  {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            var level = row.categoryLevel;
+            if(level==2){
+                return '<a class="btn btn-xs btn-warning" onclick="editCategory(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a> ';
+            }
+        }
+    }
+    ];
+
+
+function editCategory(id){
+   	var title = "编辑商品分类";
+   	var url = "#springUrl('/item/itemcategory/edit.html')?catId="+id;
+
+    layer.open({
+        type: 2,
+        title: title,
+        shadeClose: true,
+        shade: 0.8,
+        area: ['600px', '430px'],
+        fix: false,
+        maxmin: true,
+        content: url
+    });
+}
+    function addCategory(id){
+        var title = "新增商品分类";
+        var url = "#springUrl('/item/itemcategory/add.html')";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '430px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+</script>
+#end
+#extends("/common/framework.html")

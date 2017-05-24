@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopItemUserDistributionMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopItemUserDistribution">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="type" property="type" />
+		<result column="sub" property="sub" />
+		<result column="count" property="count" />
+		<result column="distribution_type_desc" property="distributionTypeDesc" />
+		<result column="distribution_sub_desc" property="distributionSubDesc" />
+	</resultMap>
+<!-- 获取商品对应的所有的ids-->
+	<select id="selectByItemId" resultType="java.lang.String" >
+	 SELECT DISTINCT d.type FROM shop_item_user_distribution d
+	   	WHERE d.item_id=#{item_id}
+	</select>
+	<!--获取类型描述-->
+	<select id="selectDesc" resultType="java.lang.String" >
+		SELECT DISTINCT distribution_type_des FROM shop_item_user_distribution
+		WHERE item_id=#{item_id}
+		AND  type=#{type}
+	</select>
+	<!--获取对象的值-->
+	<select id="selectByType" resultMap="BaseResultMap" >
+		SELECT DISTINCT * FROM shop_item_user_distribution d
+		WHERE d.item_id=#{item_id}
+		AND  d.type=#{type}
+	</select>
+</mapper>

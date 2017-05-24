@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopBrandMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopBrand">
+		<id column="id" property="id" />
+		<result column="manufactor_id" property="manufactorId" />
+		<result column="brand_name" property="brandName" />
+	</resultMap>
+
+	<select id="selectAllBrandVO" resultType="ShopBrandVO">
+		SELECT b.id as id, m.manufactor as manufactor, b.brand_name as brandName FROM shop_brand b , shop_manufactor m WHERE b.manufactor = m.id;
+	</select>
+
+
+	<select id="selectByManufactorId" resultMap="BaseResultMap">
+		SELECT b.id AS id,b.manufactor_id AS manufactorId, b.brand_name AS brandName FROM shop_brand b WHERE b.manufactor_id = #{mid};
+	</select>
+
+</mapper>

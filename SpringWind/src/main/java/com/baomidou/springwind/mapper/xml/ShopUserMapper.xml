@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopUserMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopUser">
+		<id column="id" property="id" />
+		<result column="nickname" property="nickname" />
+		<result column="sex" property="sex" />
+		<result column="head_image_addr" property="headImageAddr" />
+		<result column="mobile_phone" property="mobilePhone" />
+		<result column="date_of_birth" property="dateOfBirth" />
+		<result column="skin_type" property="skinType" />
+		<result column="email" property="email" />
+		<result column="default_addr" property="defaultAddr" />
+		<result column="shard_count" property="shardCount" />
+		<result column="evaluate_count" property="evaluateCount" />
+		<result column="shard_bonus" property="shardBonus" />
+		<result column="evaluate_bonus" property="evaluateBonus" />
+		<result column="open_id" property="openId" />
+		<result column="union_id" property="unionId" />
+		<result column="state" property="state" />
+	</resultMap>
+	<!--where条件判断-->
+	<sql id="select_shopuser_where">
+		<if test=" id != null and id != '' ">
+			 and id = #{id}
+		</if>
+		<if test=" nickname != null and nickname != '' ">
+			and nickname = #{nickname}
+		</if>
+		<if test=" mobilePhone != null and mobilePhone != '' ">
+			and mobilePhone = #{mobilePhone}
+		</if>
+		<if test=" skinType != null and skinType != '' ">
+			and skinType = #{skinType}
+		</if>
+		<if test=" email != null and email != '' ">
+			and email = #{email}
+		</if>
+		<if test="defaultAddr != null and defaultAddr != '' ">
+			and defaultAddr = #{defaultAddr}
+		</if>
+	</sql>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopUser">
+		<id column="id" property="id" />
+		<result column="nickname" property="nickname" />
+		<result column="head_image_addr" property="headImageAddr" />
+		<result column="mobile_phone" property="mobilePhone" />
+		<result column="date_of_birth" property="dateOfBirth" />
+		<result column="skin_type" property="skinType" />
+		<result column="email" property="email" />
+		<result column="sex" property="sex" />
+		<result column="default_addr" property="defaultAddr" />
+		<result column="shard_count" property="shardCount" />
+		<result column="evaluate_count" property="evaluateCount" />
+		<result column="shard_bonus" property="shardBonus" />
+		<result column="evaluate_bonus" property="evaluateBonus" />
+		<result column="open_id" property="openId" />
+		<result column="union_id" property="unionId" />
+		<result column="state" property="state" />
+		<association property="shopUserAddr" javaType="ShopUserAddr" >
+			<id column="id" property="id" />
+			<result column="user_id" property="userId" />
+			<result column="contact" property="contact" />
+			<result column="address" property="address" />
+			<result column="deleted" property="deleted" />
+			<result column="mobile_phone" property="mobilePhone" />
+		</association>
+	</resultMap>
+
+	<select id="selectMultiShopUserList" resultMap="multiResultMap">
+		SELECT su.id,su.date_of_birth,sua.address,su.email,su.evaluate_bonus,su.evaluate_count,su.head_image_addr,su.default_addr,su.mobile_phone,su.nickname,su.sex,su.open_id,su.shard_bonus,su.shard_count,su.skin_type,su.state,su.union_id
+		FROM shop_user su LEFT JOIN shop_user_addr sua on su.id=sua.user_id AND sua.deleted=0
+		<where>
+			<include refid="select_shop_user_where"></include>
+		</where>
+		<if test=" _index != null and _size != null">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+
+	<select id="selectMultiShopUserCount" resultType="int">
+		SELECT count(su.id) cnt
+		FROM shop_user su LEFT JOIN shop_user_addr sua on su.id=sua.user_id AND sua.deleted=0
+		<include refid="select_shop_user_where"></include>
+	</select>
+
+	<select id="selectSort" parameterType="shopUser"  resultMap="BaseResultMap">
+		select su.id,su.nickname,su.date_of_birth,su.skin_type,su.shard_bonus,su.shard_count,su.evaluate_bonus,su.evaluate_count,su.state
+		from shop_user su WHERE su.id=#{id}
+	</select>
+
+	<sql id="select_shop_user_where">
+		<if test=" shopUserId != null">
+			su.id=#{shopUserId}
+		</if>
+		<if test=" mobilePhone != null">
+		AND 	sua.mobile_phone=#{mobilePhone}
+		</if>
+		<if test=" searchKey != null">
+		OR	su.nickname LIKE '%${searchKey}%'
+		</if>
+		<if test=" address != null ">
+		OR	sua.address LIKE '%${searchKey}%'
+		</if>
+
+	</sql>
+
+	<!--根据下面的条件查询用户的ID-->
+	<!--10查询所有的用户的ID-->
+	<select id="selectUserIdAll" resultType="string">
+		SELECT id FROM shop_user WHERE state=0
+	</select>
+	<!--2根据用户的订单数量-->
+	<select id="selectUserIdByOrderCount" resultType="string">
+		SELECT su.id FROM shop_user su LEFT JOIN (SELECT count(so.id) cnt,so.user_id
+		FROM shop_order so
+		GROUP BY so.user_id
+		ORDER BY cnt DESC ) z ON su.id=z.user_id
+		WHERE su.state=0 AND z.cnt >=#{x}
+	</select>
+	<!--3根据点评数量-->
+	<select id="selectUserIdByEvaluateCount" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT COUNT(sie.item_id) cnt,sie.user_id FROM shop_item_evaluate sie GROUP BY sie.user_id ORDER BY cnt DESC ) z ON su.id=z.user_id
+		WHERE su.state=0 AND z.cnt >=#{x}
+	</select>
+	<!--4根据分享数量-->
+	<select id="selectUserIdBySharedCount" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT COUNT(ses.id) cnt,ses.user_id FROM shop_evaluate_shared ses GROUP BY ses.user_id ORDER BY cnt DESC ) z ON su.id=z.user_id
+		WHERE z.cnt >=#{x} AND su.state=0
+	</select>
+	<!--5根据订单的消费金额-->
+	<select id="selectUserIdByOrderTotal" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT  SUM(so.order_total) sm ,so.user_id FROM shop_order so GROUP BY so.user_id ORDER BY sm DESC )z ON su.id=z.user_id
+		WHERE su.state=0 AND z.sm >=#{x}
+	</select>
+	<!--6根据订单量排名-->
+	<select id="selectUserIdByOrderCountRank" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT count(so.id) cnt,so.user_id FROM shop_order so GROUP BY so.user_id ) z ON su.id=z.user_id
+		WHERE su.state=0 ORDER BY cnt DESC
+		LIMIT #{x}
+	</select>
+	<!--7根据点评数量排名-->
+	<select id="selectUserIdByEvaluateCountRank" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT COUNT(sie.item_id) cnt,sie.user_id FROM shop_item_evaluate sie GROUP BY sie.user_id  ) z ON su.id=z.user_id
+		WHERE su.state=0 ORDER BY z.cnt DESC
+		LIMIT #{x}
+	</select>
+	<!--8根据分享数量排名-->
+	<select id="selectUserIdBySharedCountRank" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT COUNT(ses.id) cnt,ses.user_id FROM shop_evaluate_shared ses GROUP BY ses.user_id  ) z ON su.id=z.user_id
+		WHERE su.state=0 ORDER BY z.cnt DESC
+		LIMIT #{x}
+	</select>
+	<!--9根据订单的消费金额排名-->
+	<select id="selectUserIdByOrderTotalRank" resultType="string">
+		SELECT su.id FROM shop_user su
+		LEFT JOIN (SELECT  SUM(so.order_total) sm ,so.user_id FROM shop_order so GROUP BY so.user_id  )z ON su.id=z.user_id
+		WHERE su.state=0
+		ORDER BY z.sm DESC
+		LIMIT #{x}
+	</select>
+</mapper>

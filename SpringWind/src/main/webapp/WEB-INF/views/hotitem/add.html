@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+
+    <script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+    <script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+    <script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+    <script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+    <script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+    <script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+    <script src="#springUrl('/static/js/base_list.js')"></script>
+    <script src="#springUrl('/static/js/common.js')"></script>
+    <script type="text/javascript">
+        var dataUrl = "#springUrl('/operate/hotitem/selectUpdateShopHotItemList.html')";
+        var dataColumns = [{checkbox:true}, {
+            field: 'itemId',
+            title: '商品ID'
+        }, {
+            field: 'itemName',
+            title: '商品名称'
+        }, {
+            field: 'evaluateCount',
+            title: '点评数量'
+        }, {
+            field: 'grade',
+            title: '评分'
+        }, {
+            field: 'price',
+            title: '价格'
+        }, {
+            field: 'advantage',
+            title: '点评优点'
+        }, {
+            field: 'sortFactor',
+            title: '排序因子'
+        }, {
+            field: 'sessionNo',
+            title: '期数'
+        }, {
+            field: 'createDate',
+            title: '日期',
+            formatter:function(value,row,index){
+                return formatDateSimple(value);
+            }
+        }
+        ];
+        /*$(function(){
+         $( "#createDate" ).datepicker({
+         altField: "#alternate",
+         altFormat: "DD, d MM, yy"
+         });
+         });*/
+var itemIds
+
+
+            $(function() {
+                /*$("#dataTable").on('check.bs.table' + 'uncheck.bs.table', function (row, $itemId) {
+                    console.log(row);
+                    console.log($(row));
+
+                });*/
+
+                /*$("#dataTable").bootstrapTable({
+                    onCheckRow:function(row){
+                        console.log(row.itemId)
+                    }
+                });*/
+
+                /*var row = $("#dataTable").bootstrapTable("getSelections");
+                console.log(row.itemId);*/
+
+
+
+            });
+
+
+        function confirmAdd() {
+            /*$("#dataTable").bootstrapTable("check",function(index,itemId){
+                console.log(index);
+            });
+            $("#dataTable").bootstrapTable({
+                onCheck:function(index){
+                    console.log(index);
+                }
+            })*/
+
+
+               /* layer.confirm('请先选择爆款商品吗!', {
+                    btn: ['确定', '取消'] //按钮
+                }, function () {
+                    return;
+                }, function () {
+                    return;
+                });*/
+            var row = $("#dataTable").bootstrapTable("getSelections");
+            /*var s ="";
+            $(row).each(function(item,index){
+                s += item.itemId+",";
+            });*/
+
+
+            var hotItems = JSON.stringify(row);//"1,2,3,6,8,9,"
+            var objects = JSON.parse(hotItems);
+            if(objects.length <=0){
+                alert("请先选择商品")
+                return;
+            }
+
+            /*var itemIds = '';
+            $.each(objects,function(i,n){
+                itemIds += n.itemId+",";
+                if(i==objects.length){
+                    itemIds.split(0,itemIds.length);
+                }
+            });*/
+            //询问框
+            layer.confirm('确定添加爆款商品吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                $.ajax({
+                    type: "POST",
+                    url: "#springUrl('/operate/hotitem/addShopHotItem')",
+                    data:hotItems,
+                    contentType:"application/json",
+                    datatype: "text",
+                    success: function (data) {
+                        var d = JSON.parse(data);
+                        if(d.success && d.data){
+                            window.parent.location.reload();
+                           /* $('#dataTable').bootstrapTable('refresh',{url:dataUrl});*/
+                        }
+
+                        layer.closeAll();
+                    }
+                });
+            }, function () {
+                return;
+            });
+        }
+
+        function getRowsData(){
+            var row = $("#dataTable").bootstrapTable("getSelections");
+            var js = JSON.stringify(row);
+            var jo = JSON.parse(js);
+            return jo;
+        }
+
+    </script>
+</head>
+<body class="white-bg" >
+<!--<button class="btn btn-primary" onclick="addShopHotItem()" type="button"><i class="fa fa-pencil"></i>添加</button>-->
+<button class="btn btn-primary" onclick="confirmAdd()" type="button"><i class="fa fa-pencil"></i>确定</button>
+
+
+<div class="row">
+
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+
+    </div>
+
+
+
+</div>
+
+</body>
+
+</html>

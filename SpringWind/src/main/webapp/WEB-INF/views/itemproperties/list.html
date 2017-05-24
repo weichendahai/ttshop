@@ -1,0 +1,133 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>商品规格维护</a></li><li class="active"><strong>商品规格维护</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>
+		</div>
+		<button class="btn btn-primary" onclick="addProperty(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加规格</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/item/itemproperties/getShopItemPropertiesList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'shopItem.itemName',
+        title: '商品名称'
+    }, {
+        field: 'propertyKey',
+        title: '商品属性',
+        formatter:function(value,row,index){
+            return showPropertyKey(value);
+        }
+    }, {
+        field: 'propertyDesc',
+        title: '属性描述'
+    },  {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="editProperty(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a> '
+                    +'<a class="btn btn-xs btn-warning" onclick="delProperty(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> ';
+        }
+    }
+    ];
+
+    function delProperty(proId) {
+        //询问框
+
+        layer.confirm('确定删除吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/item/itemproperties/delProperty/')?proId=" + proId,
+                datatype: "text",
+                success: function (data) {
+                    var d = JSON.parse(data)
+                    if(d.success && d.data) {
+                        window.parent.location.reload();
+                    }else {
+                        /*if(data == 'true'){
+                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+                    }*/
+                    layer.closeAll();
+                    }
+                }
+            });
+        }, function () {
+            return;
+        });
+    }
+
+function editProperty(id){
+   	var title = "编辑商品属性";
+   	var url = "#springUrl('/item/itemproperties/edit.html')?proId="+id;
+
+    layer.open({
+        type: 2,
+        title: title,
+        shadeClose: true,
+        shade: 0.8,
+        area: ['600px', '430px'],
+        fix: false,
+        maxmin: true,
+        content: url
+    });
+}
+    function addProperty(id){
+        var title = "新增商品属性";
+        var url = "#springUrl('/item/itemproperties/add.html')";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['500px', '400px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function showPropertyKey(key){
+        if(key==0){
+            return "色号";
+        }else if(key==1){
+            return "容量";
+        }else if(key==2){
+            return "数量";
+        }else if(key==3){
+            return "重量";
+        }
+    }
+</script>
+#end
+#extends("/common/framework.html")

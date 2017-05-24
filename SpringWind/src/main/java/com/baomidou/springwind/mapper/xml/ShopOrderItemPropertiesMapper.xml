@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopOrderItemPropertiesMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopOrderItemProperties">
+		<id column="id" property="id" />
+		<result column="order_item_id" property="orderItemId" />
+		<result column="order_id" property="orderId" />
+		<result column="order_item_id" property="orderItemId" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="price" property="price" />
+		<result column="count" property="count" />
+	</resultMap>
+	<!--订单详情-->
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopOrderItemProperties">
+		<id column="id" property="id" />
+		<result column="order_item_id" property="orderItemId" />
+		<result column="order_id" property="orderId" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="price" property="price" />
+		<result column="count" property="count" />
+		<association property="shopOrder" javaType="ShopOrder">
+			<id column="id" property="id" />
+			<result column="order_code" property="orderCode" />
+			<result column="user_id" property="userId" />
+			<result column="order_state" property="orderState" />
+			<result property="expressCode" column="express_code" />
+			<result column="order_total" property="orderTotal" />
+			<result column="order_addr_id" property="orderAddrId" />
+			<result column="freight" property="freight" />
+			<result column="user_coupon_id" property="userCouponId" />
+			<result column="user_gift_card_id" property="userGiftCardId" />
+			<result column="create_date" property="createDate" />
+			<result column="modify_date" property="modifyDate" />
+		</association>
+		<association property="shopItemProperties" javaType="ShopItemProperties">
+			<id column="id" property="id" />
+			<result column="item_id" property="itemId" />
+			<result column="property_key" property="propertyKey" />
+			<result column="property_value" property="propertyValue" />
+			<result column="property_desc" property="propertyDesc" />
+		</association>
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+			<result column="item_icon_addr" property="itemIconAddr" />
+			<result column="info_image_addrs" property="infoImageAddrs" />
+			<result column="info_big_image_addr" property="infoBigImageAddr" />
+			<result column="item_effect" property="itemEffect" />
+			<result column="item_compose" property="itemCompose" />
+			<result column="manufactor_id" property="manufactorId" />
+			<result column="price" property="price" />
+			<result column="item_state" property="itemState" />
+		</association>
+		<association property="shopItemCategory" javaType="ShopItemCategory">
+			<id column="id" property="id" />
+			<result column="category_level" property="categoryLevel" />
+			<result column="category_name" property="categoryName" />
+			<result column="pid" property="pid" />
+		</association>
+	</resultMap>
+
+	<select id="selectShopOrderItemByOrderCode" parameterType="long" resultMap="multiResultMap">
+		SELECT soip.property_key,soip.property_value,si.item_name,so.order_code,soip.price,soip.count,soip.id
+		FROM shop_order_item_properties soip
+		LEFT JOIN shop_item si on soip.item_id =si.id
+		LEFT JOIN shop_order so on so.id=soip.order_id
+		WHERE so.order_code=#{orderCode}
+	</select>
+
+	<select id="selectMultiShopOrderItemPropertiesList" resultMap="multiResultMap">
+		SELECT soip.id,soip.count,soip.item_id,soip.price,soip.order_id,so.order_code,so.order_state,so.order_total,
+		sic.category_name,sic.category_level,sic.id,
+		so.freight,si.id,si.item_name,si.item_icon_addr,sip.property_key,sip.property_value,sip.property_desc,so.create_date,so.express_code
+		FROM shop_order_item_properties soip LEFT JOIN shop_order so on soip.order_id=so.id
+		LEFT JOIN shop_item_properties sip on soip.item_id=sip.item_id AND soip.property_key=sip.property_key AND soip.property_value=sip.property_value
+		LEFT JOIN shop_item si on sip.item_id=si.id
+		LEFT JOIN shop_item_category sic on si.item_category_primary=sic.id
+		<if test=" orderId != null">
+			WHERE so.id=#{orderId}
+		</if>
+		<if test=" orderItemId != null">
+			WHERE soip.order_item_id=#{orderItemId}
+		</if>
+		ORDER BY so.create_date DESC
+		<if test="_index != null and _size != null ">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+
+	<select id="selectMultiShopOrderItemPropertiesCount" resultType="int">
+		SELECT COUNT(soip.id) cnt
+		FROM shop_order_item_properties soip LEFT JOIN shop_order so on soip.order_id=so.id
+		LEFT JOIN shop_item_properties sip on soip.item_id=sip.item_id AND soip.property_key=sip.property_key AND soip.property_value=sip.property_value
+		LEFT JOIN shop_item si on sip.item_id=si.id
+		<if test=" orderId != null">
+			WHERE so.id=#{orderId}
+		</if>
+		ORDER BY so.create_date DESC
+	</select>
+
+	<!--查询订单详情里的属性-->
+	<select id="selectMultiShopOrderItemProperties" resultMap="multiResultMap">
+		SELECT soip.id, soip.order_item_id,sip.property_desc
+		FROM shop_order_item_properties soip LEFT JOIN shop_order_item soi ON soip.order_item_id=soi.id
+		LEFT JOIN shop_item_properties sip ON soip.item_id=sip.item_id AND soip.property_key=sip.property_key AND soip.property_value=sip.property_value
+		<if test=" orderItemId != null ">
+			WHERE soip.order_item_id=#{orderItemId}
+		</if>
+	</select>
+
+ <!--//获取用户对应的properties-->
+	<select id="seletctByItemId" resultMap="BaseResultMap">
+		SELECT * FROM shop_order_item_properties soip
+		WHERE soip.order_id=#{id}
+		AND   soip.item_id=#{itemId}
+		AND   soip.order_item_id=#{OrderitemId}
+	</select>
+	<!--获取用户对应信息-->
+	<select id="getItemOrder" resultMap="BaseResultMap">
+		SELECT * FROM shop_order_item_properties soip
+		WHERE soip.order_id=#{orderId}
+		AND   soip.item_id=#{itemId}
+	</select>
+</mapper>

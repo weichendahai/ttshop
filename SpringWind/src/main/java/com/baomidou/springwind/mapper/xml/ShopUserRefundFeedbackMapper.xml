@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopUserRefundFeedbackMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopUserRefundFeedback">
+		<id column="id" property="id" />
+		<result column="user_refund_id" property="userRefundId" />
+		<result column="create_date" property="createDate" />
+		<result column="message" property="message" />
+		<result column="from" property="from" />
+		<result column="image_addr" property="imageAddr" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopUserRefundFeedback">
+		<id column="id" property="id" />
+		<result column="user_refund_id" property="userRefundId" />
+		<result column="create_date" property="createDate" />
+		<result column="message" property="message" />
+		<result column="from" property="from" />
+		<result column="image_addr" property="imageAddr" />
+	</resultMap>
+
+	<select id="selectUserRefundFeedbackList" resultMap="multiResultMap">
+		SELECT surf.create_date,surf.id,surf.message,surf.image_addr,surf.`from`
+		FROM shop_user_refund_feedback surf LEFT JOIN shop_user_refund sur ON surf.user_refund_id=sur.id
+		<if test="userRefundId != null">
+			WHERE sur.id=#{userRefundId}
+		</if>
+	</select>
+
+</mapper>

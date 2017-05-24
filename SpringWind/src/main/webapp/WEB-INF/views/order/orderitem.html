@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+
+    <script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+    <script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+    <script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+    <script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+    <script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+    <script src="#springUrl('/static/js/base_list.js')"></script>
+    <script src="#springUrl('/static/js/common.js')"></script>
+    <script type="text/javascript">
+    var Request = {
+        QueryString : function(val) {
+            var uri = window.location.search;
+            var re = new RegExp("" +val+ "=([^&?]*)", "ig");
+            return ((uri.match(re))?(uri.match(re)[0].substr(val.length+1)):"");
+        }
+    }
+        var orderId = Request.QueryString("orderId");
+    var dataUrl = "#springUrl('/order/orderitemproperties/getShopOrderItemPropertiesList.html')?orderId="+orderId;
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'shopOrder.orderCode',
+        title: '订单号'
+    }, {
+        field: 'shopOrder.expressCode',
+        title: '快递单号'
+    }, {
+        field: 'shopOrder.orderState',
+        title: '订单状态',
+        formatter:function(value,row,index){
+            return showOrderState(value);
+        }
+    }, {
+        field: 'shopItem.itemName',
+        title: '商品名称'
+    },{
+        field: 'shopItem.itemIconAddr',
+        title: '商品图标',
+        formatter:function(value,row,index){
+            return '<img src="'+value+'" style="display:block;width:40px;height:40px"/>';
+        }
+    }, {
+        field: 'shopItemCategory.categoryName',
+        title: '商品种类'
+    },{
+        field: 'shopItemProperties.propertyDesc',
+        title: '商品规格'
+    }, {
+        field: 'price',
+        title: '商品价格',
+        formatter:function(value,row,index){
+            return (value/100).toFixed(2);
+        }
+    }, {
+        field: 'count',
+        title: '数量'
+    }, {
+        field: 'shopOrder.orderTotal',
+        title: '总金额',
+        formatter:function(value,row,index){
+            return (value/100).toFixed(2);
+        }
+    }
+    ];
+    /*$(function(){
+     $( "#createDate" ).datepicker({
+     altField: "#alternate",
+     altFormat: "DD, d MM, yy"
+     });
+     });*/
+
+</script>
+</head>
+<body class="white-bg" >
+<div class="row">
+
+        <div class="col-sm-12">
+            <table id="dataTable"></table>
+        </div>
+
+</div>
+
+</body>
+
+</html>

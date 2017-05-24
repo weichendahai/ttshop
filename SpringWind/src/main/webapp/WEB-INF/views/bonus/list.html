@@ -1,0 +1,142 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>佣金管理</a></li><li class="active"><strong>申请提现列表</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+            <!--<span class="input-group-btn">
+				<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()" >
+                    <option  selected="selected" value="''">排序</option>
+                    <option value="createDate" >下单时间</option>
+                    <option value="modifyDate" >修改时间</option>
+                    <option value="orderTotal" >订单金额</option>
+                    <option value="orderState" >订单状态</option>
+                </select>
+			</span>-->
+			<input type="text" class="form-control" id="searchKey">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info" onclick="searchBonus()" >搜索</button>
+			</span>
+		</div>
+		<!--<button class="btn btn-primary" onclick="editItem(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加商品</button>-->
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+<iframe src="" style="display: none" id="exportIframe"></iframe>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+
+    var dataUrl = "#springUrl('/bonus/getBonusPaymentList')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'shopUser.nickname',
+        title: '用户'
+    }, {
+        field: 'total',
+        title: '申请金额',
+        formatter:function(value,row,index){
+            return (value/100).toFixed(2);
+        }
+    },{
+        field: 'createDate',
+        title: '申请日期',
+        formatter:function(value,row,index){
+            return formatDate(value);
+        }
+    }, {
+        field: 'state',
+        title: '申请状态',
+        formatter:function(value,row,index){
+            if(value==0){
+                return "申请中"
+            }
+            if(value==1){
+                return "已支付"
+            }
+            /*if(value==2){
+                return "已支付"
+            }*/
+        }
+    }, {
+        field: 'paymentDate',
+        title: '支付时间',
+        formatter:function(value,row,index){
+            return formatDateSimple(value);
+        }
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            var state = row.state;
+            if(state==0){
+                return '<a class="btn btn-xs btn-warning" onclick="extractBonus(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>提现</a> ';
+            }else{
+                return "已经支付或处理"
+            }
+
+        }
+    }
+    ];
+
+    function extractBonus(bonusId){
+        var url;
+        if(bonusId!=null){
+            layer.confirm('确定提现吗？',{btn:['确定','取消']},function() {
+                url = "#springUrl('/bonus/extract')?bonusId=" + bonusId;
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: '',
+                    contentType: 'text',
+                    success: function (data) {
+                        if (data == 'true') {
+                            layer.confirm('提现成功!', {btn: ['确定']}, function () {
+                                layer.closeAll();
+                                $("#dataTable").bootstrapTable('refresh', {url: dataUrl});
+                            });
+                        } else {
+                            layer.confirm('提现失败!!!', {btn: ['确定']}, function () {
+                                layer.closeAll();
+                            });
+                        }
+                    }
+                });
+            },function(){
+                return;
+            });
+
+        }
+
+    }
+
+
+    function searchBonus(){
+        var search = $.trim( $("#searchKey").val());
+        var str = search.split(" ").join("");
+        var url = "#springUrl('/bonus/getBonusPaymentList')?searchKey="+str;
+        $("#dataTable").bootstrapTable("refresh",{url:url});
+}
+</script>
+#end
+#extends("/common/framework.html")

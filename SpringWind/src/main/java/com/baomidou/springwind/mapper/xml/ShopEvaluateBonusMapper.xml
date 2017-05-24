@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopEvaluateBonusMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopEvaluateBonus">
+		<id column="id" property="id" />
+		<result column="evaluate_id" property="evaluateId" />
+		<result column="order_id" property="orderId" />
+		<result column="user_id" property="userId" />
+		<result column="item_id" property="itemId" />
+		<result column="create_date" property="createDate" />
+		<result column="bonus" property="bonus" />
+	</resultMap>
+  <!--榜单排名-->
+	<select id="selectRank" resultMap="BaseResultMap">
+       select (@i:=@i+1) AS id ,T.bonus AS bonus ,T.userCode AS user_id  FROM
+		(SELECT distinct user_id AS userCode,SUM(bonus) AS bonus
+        from shop_evaluate_bonus
+        WHERE unix_timestamp(date_format(create_date,#{str})) between unix_timestamp(#{startDate}) and unix_timestamp(#{endDate})
+        GROUP BY user_id) T,(SELECT @i:=0) r
+		ORDER BY T.bonus DESC
+		limit #{page_no},10
+	</select>
+	<!--获取插叙的总数-->
+	<select id="getCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS COUNT FROM
+   ( SELECT distinct user_id
+     FROM shop_evaluate_bonus WHERE unix_timestamp(date_format(create_date,#{str})) between unix_timestamp(#{startDate}) and unix_timestamp(#{endDate})
+      ) T
+	</select>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopEvaluateBonus">
+		<id column="id" property="id" />
+		<result column="evaluate_id" property="evaluateId" />
+		<result column="order_id" property="orderId" />
+		<result column="user_id" property="userId" />
+		<result column="item_id" property="itemId" />
+		<result column="create_date" property="createDate" />
+		<result column="bonus" property="bonus" />
+		<association property="shopOrder" javaType="ShopOrder">
+			<id column="id" property="id" />
+			<result column="order_code" property="orderCode" />
+			<result column="user_id" property="userId" />
+			<result column="order_state" property="orderState" />
+			<result property="expressCode" column="express_code" />
+			<result column="order_total" property="orderTotal" />
+		</association>
+		<association property="shopUser" javaType="ShopUser">
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+			<result column="sex" property="sex" />
+			<result column="head_image_addr" property="headImageAddr" />
+			<result column="mobile_phone" property="mobilePhone" />
+		</association>
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+			<result column="item_icon_addr" property="itemIconAddr" />
+			<result column="info_image_addrs" property="infoImageAddrs" />
+		</association>
+		<association property="shopItemEvaluate" javaType="ShopItemEvaluate">
+			<id column="id" property="id" />
+			<result column="user_id" property="userId" />
+			<result column="item_id" property="itemId" />
+			<result column="advantage" property="advantage" />
+			<result column="disadvantage" property="disadvantage" />
+			<result column="evaluate_image_addr" property="evaluateImageAddr" />
+			<result column="evaluate_vedio_addr" property="evaluateVedioAddr" />
+			<result column="other_item_ids" property="otherItemIds" />
+			<result column="grade" property="grade" />
+			<result column="create_date" property="createDate" />
+			<result column="evaluate_state" property="evaluateState" />
+		</association>
+	</resultMap>
+
+	<!--获取点评佣金详细信息-->
+	<select id="selectMultiShopEvaluateSharedList" resultMap="multiResultMap">
+		SELECT seb.id, seb.bonus,seb.create_date,so.create_date,so.order_code,si.item_name,su.nickname
+		FROM shop_evaluate_bonus seb LEFT JOIN shop_item_evaluate sie ON seb.evaluate_id=sie.id
+		LEFT JOIN shop_order so ON seb.order_id=so.id
+		LEFT JOIN shop_item si ON seb.item_id=si.id
+		LEFT JOIN shop_user su ON seb.user_id=su.id
+		<if test="evaluateId != null">
+			WHERE seb.evaluate_id=#{evaluateId}
+		</if>
+		ORDER BY seb.create_date DESC
+		<if test="_index != null and _size != null">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 100%;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+   	   <input type="hidden" name="shopItem.id" id="itemId" value="$!{item.id}">
+       <div class="form-group"><label class="col-sm-4 control-label">名称</label>
+      		<div class="col-sm-8">
+			<input type="text" class="form-control" name="shopItem.itemName" placeholder="请输入商品名称" value="$!{item.itemName}" maxlength="50" >
+      		</div>
+       </div>
+        <div class="form-group"><label class="col-sm-4 control-label">图标</label>
+            <div class="col-sm-8">
+                <input id="itemIcon" type="file" style="display:none">
+                <input name="shopItem.itemIconAddr" type="hidden" value="$!{item.itemIconAddr}">
+                <a id="itemIconView">$!{item.itemIconAddr}</a>
+                <br/>
+                <a class="btn" onclick="$('#itemIcon').click();">选择图标文件</a>
+                <a class="btn" onclick="removeImage('itemIconView','itemIconAddr')">清空</a>
+            </div>
+        </div>
+       <div class="form-group"><label class="col-sm-4 control-label">商品介绍图片</label>
+           <div class="col-sm-8">
+               <input id="itemBigImage" type="file" style="display:none">
+               <input name="shopItem.infoBigImageAddr" type="hidden" value="$!{item.infoBigImageAddr}">
+               <a id="itemBigImageView">$!{item.infoBigImageAddr}</a>
+               <br/>
+               <a class="btn" onclick="$('#itemBigImage').click();">选择介绍图片文件</a>
+               <a class="btn" onclick="removeImage('itemBigImageView','infoBigImageAddr')">清空</a>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">商品详情图片（最多5张）</label>
+           <!--<div class="col-sm-8">&lt;!&ndash;商品详情图片&ndash;&gt;-->
+               <!--<input type="file" class="form-control" name="infoImageAddrs" value="$!{item.infoImageAddrs}" >-->
+           <!--</div>-->
+           <div class="col-sm-8">
+               <input id="infoImages" type="file" style="display:none">
+               <input name="shopItem.infoImageAddrs" type="hidden" value="$!{item.infoImageAddrs}">
+               <a id="infoImageAddrsView">$!{item.infoImageAddrs}</a>
+               <br/>
+               #if ( $!{maxInfoImgAddrs} )
+               <a class="btn OverFiveImage" id="infoImageAddrsAddBtn" onclick="$('#infoImages').click();" style="display: none">添加商品详情图片文件</a>
+               #else
+               <a class="btn" id="infoImageAddrsAddBtn" onclick="$('#infoImages').click();">添加商品详情图片文件</a>
+               #end
+               <a class="btn" onclick="removeImage('infoImageAddrsView','infoImageAddrs')">清空</a>
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">商品规格(修改规格后，必须重新设置价格)：</label>
+           <div class="col-sm-8">
+               <div class="col-sm-10">
+                   #foreach($itemPropertyModel in $!{itemPropertyModels})
+                       <label><input class="itemPropertyModelKey" name="itemPropertyModels[$!{velocityCount}].propertyKey" id="itemPropertyModels$!{velocityCount}_propertyKey"  #if($!{itemPropertyModel.propertyValues}) checked="checked" #end type="checkbox" value="$!{itemPropertyModel.propertyKey}" />$!{itemPropertyModel.propertyName}:</label>
+                       <label><input class="col-sm-7 itemPropertyModelDesc"  type="text" value="$!{itemPropertyModel.propertyDescs}" id="itemPropertyModels$!{velocityCount}_propertyDescs" name="itemPropertyModels[$!{velocityCount}].propertyDescs"  #if(!$!{itemPropertyModel.propertyValues}) disabled="disabled" #end  maxlength="50">多个数据用空格分隔</label>
+                       <input type="hidden" value="$!{itemPropertyModel.propertyValues}" id="itemPropertyModels$!{velocityCount}_propertyValues" #if($!{itemPropertyModel.propertyValues}) name="itemPropertyModels[$!{velocityCount}].propertyValues" #end>
+                   #end
+               </div>
+           </div>
+       </div>
+       <div id="propertyPriceDiv" class="form-group" style="display: none">
+           <table class='table table-hover table-striped' style='text-align: center;;'><tr><td>规格</td><td>价格</td></tr>
+
+               #foreach($shopItemPrice in $!{shopItemPrices})
+               <tr>
+                   <td><input type='hidden' name = 'shopItemPrices[$!{velocityCount}].propertyPathName' value='$!{shopItemPrice.propertyPathName}'/>
+                       $!{shopItemPrice.propertyPathName}</td>
+                   <td><input type='hidden' name = 'shopItemPrices[$!{velocityCount}].propertyPath' value='$!{shopItemPrice.propertyPath}'/>
+                       <input type='text' name = 'shopItemPrices[$!{velocityCount}].price' value='$!{shopItemPrice.price}' class='priceInput' readonly /></td>
+               </tr>
+               #end
+           </table>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">全规格通用价格（单位分）</label>
+           <div class="col-sm-8">
+               <input type="text" id="shopItem_price" class="form-control" name="shopItem.price" value="$!{item.price}"   maxlength="10">
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">规格区分价格（单位分）</label>
+           <div class="col-sm-8">
+               <a class="btn btn-info" id="propertyPriceViewBtn">查看价格</a><a class="btn btn-warning" id="propertyPrice">设置价格</a>
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">产品详情</label>
+           <div class="col-sm-8"><!--商品详情图片-->
+               <input type="text" class="form-control" name="shopItem.itemEffect" value="$!{item.itemEffect}"  maxlength="100" >
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">生产厂家</label>
+           <div class="col-sm-8">
+               <!--使用下拉列表-->
+               <select name="shopItem.manufactorId" class="form-control" id="manufactorId">
+                   #foreach($mf in $!{manufactors})
+                   <option value="$!{mf.id}"  #if($!{item.manufactorId}==$!{mf.id}) selected="selected" #end >$!{mf.manufactor}</option>
+                   #end
+               </select>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">品牌</label>
+           <div class="col-sm-8">
+               <select name="shopItem.brandId" class="form-control" id="brandId">
+                   #foreach($br in $!{brands})
+                   <option value="$!{br.id}"  #if($!{item.brandId}==$!{br.id}) selected="selected" #end >$!{br.brandName}</option>
+
+                   #end
+               </select>
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">状态</label>
+           <div class="col-sm-8">
+               <!--#if($!{item.itemState})
+               <input type="hidden" class="form-control" name="itemState" value="0"  >
+               <label class="control-label">创建</label>
+               #end-->
+               #if($!{item.itemState}==1)
+               <input type="hidden" class="form-control" name="itemState" value="$!{item.itemState}"  >
+               <label class="control-label">上架</label>
+               #end
+               #if($!{item.itemState}==-1)
+               <input type="hidden" class="form-control" name="itemState" value="$!{item.itemState}"  >
+               <label class="control-label">下架</label>
+               #end
+               #if($!{item.itemState}!=1 && $!{item.itemState}!=-1)
+               <input type="hidden" class="form-control" name="itemState" value="0"  >
+               <label class="control-label">创建</label>
+               #end
+               <!--<select name="shopItem.itemState" id="itemState" class="form-control" >
+                   <option value="0"   selected="selected"  >创建</option>
+                   <option value="1"  #if($!{item.itemState}==1) selected="selected" #end >上架</option>
+                   <option value="-1"  #if($!{item.itemState}==-1) selected="selected" #end >下架</option>
+               </select>-->
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">一级分类</label>
+           <div class="col-sm-8">
+               <!--<input type="hidden" class="form-control" name="itemCategoryPrimary" value="$!{item.itemCategoryPrimary}"  >-->
+               <select class="form-control" id="itemCategoryPrimary" name="shopItem.itemCategoryPrimary">
+                   <option value="1" #if($!{item.itemCategoryPrimary}==1) selected="selected" #end>护肤</option>
+                   <option value="2" #if($!{item.itemCategoryPrimary}==2) selected="selected" #end >彩妆</option>
+                   <option value="3" #if($!{item.itemCategoryPrimary}==3) selected="selected" #end >香氛</option>
+                   <option value="4" #if($!{item.itemCategoryPrimary}==4) selected="selected" #end >美发</option>
+                   <option value="5" #if($!{item.itemCategoryPrimary}==5) selected="selected" #end >美体/美甲</option>
+                   <option value="6" #if($!{item.itemCategoryPrimary}==6) selected="selected" #end >个体护理</option>
+                   <option value="7" #if($!{item.itemCategoryPrimary}==7) selected="selected" #end >男士</option>
+                   <option value="8" #if($!{item.itemCategoryPrimary}==8) selected="selected" #end >其它</option>
+               </select>
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">二级分类</label>
+           <div class="col-sm-8">
+               <!--<input type="text" class="form-control" name="itemCategorySub" value="$!{item.itemCategorySub}"  >-->
+               <select class="form-control" id="itemCategorySub" name="shopItem.itemCategorySub">
+                   #foreach($ic in ${itemCategoryList})
+                   #if($!{item.itemCategorySub}==$!{ic.id})
+                    <option value="$!{ic.id}"  selected="selected"> $!{ic.categoryName}</option>
+                   #else
+                   <option value="$!{ic.id}"> $!{ic.categoryName}</option>
+                   #end
+                   #end
+               </select>
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">排序因子</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="shopItem.sortFactor"  placeholder="由小到大排序，可以是负值"  value="$!{item.sortFactor}"  maxlength="10">
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">点评佣金比率（0-100）</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="shopItem.evaluateBonusRate"  value="$!{item.evaluateBonusRate}"  maxlength="10">
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">点评佣金数量（单位分）</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="shopItem.evaluateBonusValue"  value="$!{item.evaluateBonusValue}"  maxlength="10">
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">分享佣金比率（0-100）</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="shopItem.sharedBonusRate" value="$!{item.sharedBonusRate}"   maxlength="10">
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">分享佣金数量（单位分）</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="shopItem.sharedBonusValue" value="$!{item.sharedBonusValue}"  maxlength="10" >
+           </div>
+
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">分享购买折扣比率（0-100）</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="shopItem.discountRate" value="$!{item.discountRate}"   maxlength="10">
+           </div>
+       </div>
+
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary" type="submit">#if($!{item})修 改#else提 交#end</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/jquery-ui.custom.min.js')"></script>
+<script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script type="text/javascript">
+    $(function(){
+        $( "#createDate" ).datepicker({
+            altField: "#alternate",
+            altFormat: "DD, d MM, yy"
+        });
+    });
+
+    var Request = {
+        QueryString : function(val) {
+            var uri = window.location.search;
+            var re = new RegExp("" +val+ "=([^&?]*)", "ig");
+            return ((uri.match(re))?(uri.match(re)[0].substr(val.length+1)):"");
+        }
+    }
+
+$("#myForm").validator({
+    valid: function(form){
+        var me = this;
+        // 提交表单之前，hold住表单，防止重复提交
+       // me.holdSubmit();
+        $.ajax({
+        	url: "#springUrl('/item/addOrEditSubmit')",
+            data: $(form).serialize(),
+            type: "POST",
+            success: function(data){
+            	var d = JSON.parse(data);
+                if(d.success ){
+                    if(d.data==true){
+                        window.parent.location.reload();
+                    }
+                	//当你在iframe页面关闭自身时
+                	//var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                	//parent.layer.close(index); //再执行关闭   
+                } else {
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                   // me.holdSubmit(false);
+                }
+            }
+        });
+    }
+});
+    $("#manufactorId").change(changeBrands);
+    function changeBrands(){
+        var manufactorIdVal = $("#manufactorId").val();
+
+        $.ajax({
+            url: "#springUrl('/item/brandsByManufactorId')",
+            data: {manufactorId:manufactorIdVal},
+            type: "POST",
+            success: function(data){
+                var d = JSON.parse(data);
+                if(d.success && d.data){
+                    var content ="";
+                    $(d.data).each(function( index , item){
+                        content += "<option value="+item.id+" >"+item.brandName+"</option>";
+                    });
+                    $("#brandId").html(content);
+                }
+            }
+        });
+    }
+
+    $("#itemIcon").change(function(event){
+        layer.load();
+        var e = event;
+        var type = e.target.files[0].type;//格式
+        type = type.split("/")[1];
+        var reader = new FileReader();
+        reader.onload = (function (file) {
+            return function (e) {
+                var bate64 = this.result//这个就是base64的数据了
+                bate64 =bate64.split(",")[1];
+                console.log(type);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "http://h5.ciaotalking.com/upload/UploadServlet",
+                    dataType: "json",
+                    data:{"imgStr":bate64,"postfix":type},
+                    success: function(data){
+                        console.log(data)
+                        $("#itemIconView").html(data.content);
+                        $("*[name='shopItem.itemIconAddr']").val(data.content);
+                        layer.closeAll('loading');
+                    },
+                    error: function(){
+                        layer.closeAll('loading');
+                    }
+                });
+            };
+        })(e.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    $("#itemIconView").click(function(){
+        var para =  $("#itemIconView").html();
+        layer.open({
+            type: 2,
+            title: "查看图标",
+            shadeClose: false,
+            shade: 0,
+            area: ['250px', '250px'],
+            fix: false,
+            maxmin: true,
+            content: "#springUrl('/item/viewImg')?imgAddrs="+para
+        });
+    });
+
+    $("#itemBigImage").change(function(event){
+        layer.load();
+        var e = event;
+        var type = e.target.files[0].type;//格式
+        type = type.split("/")[1];
+        var reader = new FileReader();
+        reader.onload = (function (file) {
+            return function (e) {
+                var bate64 = this.result//这个就是base64的数据了
+                bate64 =bate64.split(",")[1];
+                console.log(type);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "http://h5.ciaotalking.com/upload/UploadServlet",
+                    dataType: "json",
+                    data:{"imgStr":bate64,"postfix":type},
+                    success: function(data){
+                        console.log(data)
+                        $("#itemBigImageView").html(data.content);
+                        $("*[name='shopItem.infoBigImageAddr']").val(data.content);
+                        layer.closeAll('loading');
+                    },
+                    error: function(){
+                        layer.closeAll('loading');
+                    }
+                });
+            };
+        })(e.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    $("#itemBigImageView").click(function(){
+        var para =  $("#itemBigImageView").html();
+        layer.open({
+            type: 2,
+            title: "查看商品介绍图片",
+            shadeClose: false,
+            shade: 0,
+            area: ['400px', '400px'],
+            fix: false,
+            maxmin: true,
+            content: "#springUrl('/item/viewImg')?imgAddrs="+para+"&scale=100"
+        });
+    });
+
+    $("#infoImages").change(function(event){
+        layer.load();
+        var e = event;
+        var type = e.target.files[0].type;//格式
+        type = type.split("/")[1];
+        var reader = new FileReader();
+        reader.onload = (function (file) {
+            return function (e) {
+                var bate64 = this.result//这个就是base64的数据了
+                bate64 =bate64.split(",")[1];
+                console.log(type);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "http://h5.ciaotalking.com/upload/UploadServlet",
+                    dataType: "json",
+                    data:{"imgStr":bate64,"postfix":type},
+                    success: function(data){
+                        console.log(data)
+                        var curr = $("#infoImageAddrsView").html();
+                        if (curr != null && curr != "")
+                            $("#infoImageAddrsView").html(curr +","+data.content);
+                        else
+                            $("#infoImageAddrsView").html(data.content);
+                        $("*[name='shopItem.infoImageAddrs']").val($("#infoImageAddrsView").html());
+                        var strs = curr.split(',');
+                        if (strs.length >= 4){// max = 5
+                            $("#infoImageAddrsAddBtn").hide();
+                            $("#infoImageAddrsAddBtn").addClass("OverFiveImage");
+                        }
+                        layer.closeAll('loading');
+                    },
+                    error: function(){
+                        layer.closeAll('loading');
+                    }
+                });
+            };
+        })(e.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    $("#infoImageAddrsView").click(function(){
+        var para =  $("#infoImageAddrsView").html();
+        layer.open({
+            type: 2,
+            title: "查看商品介绍图片",
+            shadeClose: false,
+            shade: 0,
+            area: ['400px', '400px'],
+            fix: false,
+            maxmin: true,
+            content: "#springUrl('/item/viewImg')?imgAddrs="+para+"&scale=100"
+        });
+    });
+
+
+    function removeImage(aId,iName){
+        var $a =  $("#"+aId);
+        $a.html("");
+        $("*[name="+iName+"]").val();
+        if (aId == "infoImageAddrsView" && $("#infoImageAddrsAddBtn").hasClass("OverFiveImage")){
+            $("#infoImageAddrsAddBtn").removeClass("OverFiveImage");
+            $("#infoImageAddrsAddBtn").show();
+        }
+    }
+
+    var arrJson = new Array();
+    var arrString = new Array();
+    var itemHtmlType;
+    /*给把属性添加到数据库中*/
+    function addPropertyToJson(){
+        getInputValue();
+        var itemId  = $("#itemId").val();
+        if(arrJson.length>=2){
+            /*去掉重复的属性*/
+            for(var i=0;i<arrJson.length;i++){
+                arrJson[i].itemId=itemId;
+            }
+            for(var i=arrJson.length-1;i>=1;i--){
+                var json1 = JSON.stringify(arrJson[i]);
+                var j1 = arrJson[i];
+                for(var j=i-1;j>=0;j--){
+                    var j2 = arrJson[j];
+                    var k = (j1.propertyKey==j2.propertyKey);
+                    var v = (j1.propertyValue==j2.propertyValue);
+                    var d = (j1.propertyDesc==j2.propertyDesc);
+                    if(k&&v&&d){
+                        /*arrJson.pop();*/
+                        arrJson.splice(i,1);
+                        break;
+                    }
+                }
+            }
+        }
+        var json  = JSON.stringify(arrJson)
+        $.ajax({
+            url: "#springUrl('/item/itemproperties/addItemProperty')",
+            data: json,
+            type: "POST",
+            contentType:"application/json",
+            success: function(data){
+                var d = JSON.parse(data);
+                if(d.success && d.data){
+                    window.parent.location.reload();
+                    //当你在iframe页面关闭自身时
+                    //var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    //parent.layer.close(index); //再执行关闭
+                } /*else {
+                    //失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                    *//*me.holdSubmit(false);*//*
+                }*/
+            }
+        });
+    }
+    var eleCheck = document.getElementsByName("propertyKey")
+    $(eleCheck).click(function(){
+        $.each(eleCheck,function(i,n){
+            if(n.value==i){
+                var key = $("#propertyKey"+i).prop("checked");
+                var desc = $("#propertyDesc"+i);
+                if(key){
+                    desc.prop("readonly", false)
+                }else{
+                    desc.prop("readonly", true);
+                    desc.val("")
+                }
+            }
+        })
+    });
+    var jsonObj = {};
+    var eleInput = document.getElementsByName("propertyDesc");
+    $(eleInput).blur(function(){
+        getInputValue();
+    });
+
+    /*获取输入框的值*/
+    function getInputValue(){
+        $.each(eleInput,function(i,n){
+            /* var bb = $(eleInput[i]).prop("readonly");*/
+            if($(n).prop("readonly")==false){
+                var str = $.trim(n.value);
+                if(str!=""){
+                    var splitStr = str.split(/\s+/);
+                    /*var sss  = str.split(" ").join("");*/
+                    $.each(splitStr,function(o,p){
+                        if(p!=""){
+                            jsonObj = {'propertyKey':i,'propertyValue':o,'propertyDesc':p};
+                            arrJson.push(jsonObj);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    function inputAvailable(){
+        var jsonObj={};
+        var objCheck = document.getElementsByName("propertyKey");
+        //console.log(objCheck[0].checked)
+        for(var i=0;i<objCheck.length;i++){
+            var ck =  objCheck[i]
+            var checkValue = ck.value;
+            var sss = '#propertyDesc'+checkValue;
+            var obj = $(sss);
+            if(ck.checked==true){
+                obj.blur(function(){
+                    var pd = $.trim(obj.val());
+                    var split = pd.split(" ");
+                    var str = pd.split(" ").join("");
+                    /*判断之前的字符串与现在字符串是否一样，如果不一样则按现在的值保存*/
+                    if(!arrString[checkValue].isEqual(str)){
+                        if(str==""){
+                            return;
+                        }
+                        arrString[checkValue]=str;
+                        $.each(split,function(j,n){
+                            jsonObj = {'propertyKey':i,'propertyValue':j,'propertyDesc':n};
+                            $.each(arr,function(j,m){
+                                if(!Object.equals(m,jsonObj)){
+                                    arr.push(jsonObj);
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+            if(ck.checked==false){
+                obj.attr("readonly",true);
+                obj.val("");
+            }
+        }
+    }
+
+
+    $(function(){
+        /*显示二级分类*/
+        $("#itemCategoryPrimary").change(function(){
+            $("#itemCategorySub").get(0).options.length=0;
+            var primaryValue = $("#itemCategoryPrimary").val();
+            $.ajax({
+                url:"#springUrl('/item/itemcategory/getSubCategoryList')",
+                type:"post",
+                dataType:"json",
+                success:function(data){
+                    $.each(data,function(i,n){
+                        if(n.pid==primaryValue){
+                            var textNode = document.createTextNode(n.categoryName);
+                            var opEl = document.createElement("option");
+                            $(opEl).append(textNode);
+                            $(opEl).appendTo($("#itemCategorySub"));
+                            $(opEl).prop("value", n.id);
+                          /*var itemSub ="$!{item.itemCategorySub}"
+                            var iitemCategory = ""
+                            if(itemSub!=null&&itemSub!=""){
+
+                            }*/
+                        }
+                    });
+                }
+            });
+        });
+
+        $(".itemPropertyModelKey").click(function(){
+            var $this = $(this);
+            var thisId = $this.attr("id");
+            var idStr = thisId.split('_');
+            var descId = idStr[0]+"_propertyDescs";
+            var valueId = idStr[0]+"_propertyValues";
+            if ($this.is(":checked")){
+                $("#"+descId).removeAttr("disabled");
+                var descNameStr = $("#"+descId).attr("name").split(".")[0];
+                $("#"+valueId).attr("name",descNameStr+".propertyValues");
+            }else{
+                $("#"+descId).attr("disabled","disabled");
+                $("#"+valueId).removeAttr("name");
+                $("#"+descId).val("");
+                $("#"+valueId).val("");
+            }
+        });
+
+        $(".itemPropertyModelDesc").blur(function(){
+            var $this = $(this);
+            var descStr = $this.val();
+            descStr = $.trim(descStr);
+            $this.val(descStr);
+            var descArr =descStr.split(/[ ]+/);
+            var values = "0";
+            for(var i = 1 ; i < descArr.length ; ++i){
+                values+=","+i;
+            }
+            var thisId = $this.attr("id");
+            var idStr = thisId.split('_');
+            var valueId = idStr[0]+"_propertyValues";
+            $("#"+valueId).val(values);
+        });
+
+
+        $("#propertyPriceViewBtn").click(function() {
+                    propertyPriceView();
+                });
+
+        $("#propertyPrice").click(function(){
+
+                layer.confirm(
+                        '打开设置价格页面会清除掉原有的金额数据，查看则没有影响，请谨慎操作!',
+
+                    {
+                        btn: ['只是查看','确定设置'],
+                        yes:function(index){
+                        propertyPriceView();
+                        layer.close(index);
+                        },
+                        btn2:function(index){
+                            propertyPriceFunction();
+                            layer.close(index);
+                        }
+                    },
+                    {icon: 3, title:'提示'}
+                );}
+        );
+
+        function propertyPriceView(){
+            $("#setPriceOver").hide();
+            $(".priceInput").attr("readonly","readonly");
+            selectLayerIndex = layer.open({
+                type: 1,
+                title: "查看价格",
+                closeBtn: 1,
+                area: ['550px', '500px'],
+                skin: 'layui-layer-rim',
+                shadeClose: true,
+                content:$('#propertyPriceDiv')
+            });
+        }
+
+        function propertyPriceFunction(){
+            var propertyKeys = new Array();
+            var propertyValues = new Array();
+            var propertyDescs = new Array();
+            $(".itemPropertyModelKey").each(function(index,item){
+                item = $(item);
+                if (item.is(":checked")){
+                    propertyKeys[propertyKeys.length] = item.val();
+
+                    var thisId = item.attr("id");
+                    var idStr = thisId.split('_');
+                    var valueId = idStr[0]+"_propertyValues";
+                    propertyValues[propertyValues.length] = $("#"+valueId).val().split(",");;
+
+                    var descId = idStr[0]+"_propertyDescs";
+                    propertyDescs[propertyDescs.length] = $("#"+descId).val().split(/[ ]+/);
+                }
+            });
+            var propertyPathValue = new Array();
+            var propertyPathValueTemp = new Array();
+            var propertyPathDesc = new Array();
+            var propertyPathDescTemp = new Array();
+
+            for(var i = 0 ; i < propertyValues.length ; ++i){
+                var value = propertyValues[i];
+                var desc = propertyDescs[i];
+                propertyPathValueTemp = propertyPathValue.slice(0);
+                propertyPathValue = new Array();
+                propertyPathDescTemp = propertyPathDesc.slice(0);
+                propertyPathDesc = new Array();
+
+                if (propertyPathValueTemp.length > 0 ){
+                    for(var j = 0 ; j < propertyPathValueTemp.length ; ++j){
+                        for(var k = 0 ; k < value.length ; ++k){
+                            propertyPathValue[propertyPathValue.length] = propertyPathValueTemp[j]+"/"+propertyKeys[i] +":"+value[k];
+                            propertyPathDesc[propertyPathDesc.length] = propertyPathDescTemp[j]+"/"+desc[k];
+                        }
+                    }
+                }else{
+                    for(var j = 0 ; j < value.length ; ++j){
+                        propertyPathValue[propertyPathValue.length] =propertyKeys[i] +":"+value[j];
+                        propertyPathDesc[propertyPathDesc.length] = desc[j];
+                    }
+                }
+            }
+
+            var content = "<table class='table table-hover table-striped' style='text-align: center;;'><tr><td>规格</td><td>价格</td></tr>";
+            for(var i = 0 ; i < propertyPathValue.length ; ++i){
+                content+="<tr>";
+                content+= "<td>"+"<input type='hidden' name = 'shopItemPrices["+i+"].propertyPathName' value='"+propertyPathDesc[i]+"'/>"+propertyPathDesc[i]+"</td>" ;
+                content+= "<td>"+"<input type='hidden' name = 'shopItemPrices["+i+"].propertyPath' value='"+propertyPathValue[i]+"'/>"+
+                "<input type='text' name = 'shopItemPrices["+i+"].price' value='"+$("#shopItem_price").val()+"'  id='ShopItemPrice"+i+"_price' class='priceInput'/>"+
+                "</td>" ;
+                content +="</tr>";
+            }
+            content += "</table>";
+            content += "<div class='text-center'>"+"<a id='setPriceOver' class='btn btn-warning'>确定</a></div>";
+
+            $('#propertyPriceDiv').html(content);
+            selectLayerIndex = layer.open({
+                type: 1,
+                title: "设置价格",
+                closeBtn: 1,
+                area: ['550px', '500px'],
+                skin: 'layui-layer-rim',
+                shadeClose: true,
+                content:$('#propertyPriceDiv')
+            });
+
+            $("#setPriceOver").click(function(){
+                for(var i = 0 ; i < propertyPathValue.length ; ++i){
+                    var priceId = "ShopItemPrice"+i+"_price";
+                    if($("#"+priceId).val()==""){
+                        layer.msg("所有的价格都需要填上", {icon: 7});
+                        return;
+                    }
+                }
+                layer.close(selectLayerIndex);
+                $("#setPriceOver").hide();
+            });
+        }
+
+    });
+var selectLayerIndex = -1;
+
+
+</script>
+
+</body>
+</html>

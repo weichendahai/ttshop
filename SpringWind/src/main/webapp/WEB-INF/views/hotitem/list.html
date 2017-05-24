@@ -1,0 +1,123 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>运营管理</a></li><li class="active"><strong>爆品管理</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+            <span class="input-group-btn">
+
+            <button class="btn btn-primary" onclick="updateShopHotItem()" type="button" >最新爆款商品</button>
+			</span>
+			<!--<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>-->
+		</div>
+		<!--<button class="btn btn-primary" onclick="addShopHotItem(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加爆款商品</button>-->
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/operate/hotitem/getShopHotItemListGroup.html')";
+    var dataColumns = [/*{
+        field: 'id',
+        title: '序号'
+    },*/{
+        field: 'createDate',
+        title: '日期',
+        formatter: function (value, row, index){
+            return formatDateSimple(value);
+        }
+    }, {
+        field: 'sessionNo',
+        title: '期数'
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var sno = row.sessionNo;
+            return '<a class="btn btn-xs btn-warning" onclick="showHotItem(' + "'"+ sno  +"'"+ ')">查看爆款商品</a> ';
+        }
+    }
+    ];
+
+
+
+    //更新爆款列表
+    /*function updateShopHotItem(){
+        var url = "/operate/hotitem/selectUpdateShopHotItemList";
+        $('#dataTable').bootstrapTable('refresh',{url:url});
+    }*/
+
+    /*function addShopHotItem(){
+        var title ;
+        var url = "#springUrl('/operate/hotitem/add.html')";
+        if(shopUserId==null){
+            title = "新增商品用户";
+        }
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '500px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }*/
+
+    function showHotItem(num){
+        if(num!=null){
+            var url = "#springUrl('/operate/hotitem/detail.html')?sessionNo="+num;
+            var title = "第"+num+"期爆款商品";
+            layer.open({
+                type: 2,
+                title: title,
+                shadeClose: false,
+                shade: 0.8,
+                area: ['900px', '510px'],
+                fix: false,
+                maxmin: true,
+                content: url
+            });
+        }
+    }
+
+    function updateShopHotItem(){
+        var url = "#springUrl('/operate/hotitem/update.html')";
+        var title = "最新商品列表";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['1100px', '460px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+</script>
+#end
+#extends("/common/framework.html")

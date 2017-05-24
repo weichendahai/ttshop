@@ -1,0 +1,147 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>运营管理</a></li><li class="active"><strong>搜索配置</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+            <span class="input-group-btn">
+
+           <!-- <button class="btn btn-primary" onclick="updateShopHotItem()" type="button" ><i class="fa fa-rotate-left"></i>&nbsp;最新爆款商品</button>-->
+				<!--<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()" >
+
+                    <option  selected="selected">排序</option>
+                    <option value="dateOfBirth" >点评数量</option>
+                    <option value="skinType" >评分</option>
+                    <option value="shardCount" >价格</option>
+                </select>-->
+			</span>
+			<!--<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>-->
+		</div>
+		<button class="btn btn-primary" onclick="addSearchKeyword(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加搜索关键词</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/operate/search/getShopHotSearchKeywordList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    },{
+        field: 'searchKeyword',
+        title: '搜索关键字'
+    }, {
+        field: 'sortFactor',
+        title: '排序因子'
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="editKeyword('+id+')"><i class="fa fa-pencil"></i>编辑</a>'
+            +'<a class="btn btn-xs btn-warning" onclick="delKeyword('+id+')"><i class="fa fa-pencil"></i>删除</a>';
+        }
+    }
+    ];
+
+
+
+    //更新爆款列表
+    /*function updateShopHotItem(){
+        var url = "/operate/hotitem/selectUpdateShopHotItemList";
+        $('#dataTable').bootstrapTable('refresh',{url:url});
+    }*/
+
+    /*function addShopHotItem(){
+        var title ;
+        var url = "#springUrl('/operate/hotitem/add.html')";
+        if(shopUserId==null){
+            title = "新增商品用户";
+        }
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '500px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }*/
+
+    function editKeyword(searchId){
+        var url = "#springUrl('/operate/search/edit.html')"+"?searchId="+searchId;
+        var title = "编辑搜索关键词";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['500px', '400px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function addSearchKeyword(){
+        var url = "#springUrl('/operate/search/add.html')";
+        var title = "添加搜索关键词";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['500px', '400px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function delKeyword(searchId){
+        layer.confirm('确定删除吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/operate/search/delKeyword')" +"?searchId="+searchId,
+                datatype: "text",
+                success: function (data) {
+                    var d = JSON.parse(data);
+                    if(d.success && d.data){
+                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+                    }
+                    layer.closeAll();
+                }
+            });
+        }, function () {
+            return;
+        });
+    }
+
+</script>
+#end
+#extends("/common/framework.html")

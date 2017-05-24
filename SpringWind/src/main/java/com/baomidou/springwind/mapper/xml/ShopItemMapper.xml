@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopItemMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopItem">
+		<id column="id" property="id" />
+		<result column="item_name" property="itemName" />
+		<result column="item_icon_addr" property="itemIconAddr" />
+		<result column="info_image_addrs" property="infoImageAddrs" />
+		<result column="info_big_image_addr" property="infoBigImageAddr" />
+		<result column="item_effect" property="itemEffect" />
+		<result column="item_compose" property="itemCompose" />
+		<result column="manufactor_id" property="manufactorId" />
+		<result column="price" property="price" />
+		<result column="item_state" property="itemState" />
+		<result column="item_category_primary" property="itemCategoryPrimary" />
+		<result column="item_category_sub" property="itemCategorySub" />
+		<result column="brand_id" property="brandId" />
+		<result column="create_date" property="createDate" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="evaluate_bonus_rate" property="evaluateBonusRate" />
+		<result column="evaluate_bonus_value" property="evaluateBonusValue" />
+		<result column="shared_bonus_rate" property="sharedBonusRate" />
+		<result column="shared_bonus_value" property="sharedBonusValue" />
+		<result column="discount_rate" property="discountRate" />
+		<result column="discount_value" property="discountValue" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopItem">
+		<id column="id" property="id" />
+		<result column="item_name" property="itemName" />
+		<result column="item_icon_addr" property="itemIconAddr" />
+		<result column="info_image_addrs" property="infoImageAddrs" />
+		<result column="info_big_image_addr" property="infoBigImageAddr" />
+		<result column="item_effect" property="itemEffect" />
+		<result column="item_compose" property="itemCompose" />
+		<result column="manufactor_id" property="manufactorId" />
+		<result column="price" property="price" />
+		<result column="item_state" property="itemState" />
+		<result column="item_category_primary" property="itemCategoryPrimary" />
+		<result column="item_category_sub" property="itemCategorySub" />
+		<result column="brand_id" property="brandId" />
+		<result column="create_date" property="createDate" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="evaluate_bonus_rate" property="evaluateBonusRate" />
+		<result column="evaluate_bonus_value" property="evaluateBonusValue" />
+		<result column="shared_bonus_rate" property="sharedBonusRate" />
+		<result column="shared_bonus_value" property="sharedBonusValue" />
+		<association property="poShopItemCategory" javaType="PoShopItemCategory"  >
+			<id column="id" property="id" />
+			<result column="category_level" property="categoryLevel" />
+			<result column="category_name" property="categoryName" />
+			<result column="pid" property="pid" />
+			<association property="shopItemCategory" javaType="ShopItemCategory">
+				<id column="id" property="id" />
+				<result column="category_level" property="categoryLevel" />
+				<result column="category_name" property="categoryName" />
+				<result column="pid" property="pid" />
+			</association>
+		</association>
+	</resultMap>
+
+	<!--查询商品列表-->
+	<select id="selectMultiShopItemCategoryList" resultMap="multiResultMap" >
+		SELECT si.id,si.item_name,si.item_state,sic.category_name, sicd.category_name,si.sort_factor FROM shop_item si
+		LEFT JOIN shop_item_category sic on si.item_category_primary = sic.id
+		LEFT JOIN shop_item_category sicd on sicd.id=si.item_category_sub
+		WHERE sicd.id IS NOT NULL
+		<include refid="select_item_where"></include>
+		ORDER BY si.sort_factor
+		<if test=" _index != null and _size != null ">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+
+	<select id="selectMultiShopItemList" resultMap="multiResultMap" >
+		SELECT si.id,si.item_name,si.item_state,si.item_category_primary,si.item_category_sub,sic.category_name, sicd.category_name,si.sort_factor FROM shop_item si
+		LEFT JOIN shop_item_category sic on si.item_category_primary = sic.id
+		LEFT JOIN shop_item_category sicd on sicd.id=si.item_category_sub
+		WHERE sicd.id IS NOT NULL AND si.item_state>=-1
+		<include refid="select_item_where"></include>
+		ORDER BY si.sort_factor
+		<if test=" _index != null and _size != null ">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+
+	<!--查询商品列表数量-->
+	<select id="selectMultiShopItemCategoryCount" resultType="int" >
+		SELECT count(si.id) cnt FROM shop_item si
+		LEFT JOIN shop_item_category sic on si.item_category_primary = sic.id
+		LEFT JOIN shop_item_category sicd on sicd.id=si.item_category_sub
+		WHERE sicd.id IS NOT NULL AND si.item_state>=-1
+		<include refid="select_item_where"></include>
+	</select>
+
+	<sql id="select_item_where">
+
+		<if test=" itemId != null ">
+		AND 	si.id=#{itemId}
+		</if>
+		<if test=" searchKey != null ">
+		AND( si.item_name LIKE 	'%${searchKey}%' OR   sic.category_name LIKE '%${searchKey}%' OR   sicd.category_name LIKE '%${searchKey}%' )
+		</if>
+	</sql>
+
+	<!--添加商品返回主键-->
+	<!--<insert id="insertShopItemBackKey" useGeneratedKeys="true" parameterType="com.baomidou.springwind.entity.ShopItem">
+		<selectKey keyProperty="id"  resultType="int" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert INTO shop_item
+		(id,item_name,item_icon_addr,info_image_addrs,
+		info_big_image_addr,item_effect,item_compose,manufactor_id,price,item_state,
+		item_category_primary,item_category_sub,brand_id,create_date,sort_factor,evaluate_bonus_rate,
+		shared_bonus_value,discount_rate,discount_value)
+		VALUES
+		(#{id},#{itemName},#{itemIconAddr},#{infoImageAddrs},
+		#{infoBigImageAddr},#{itemEffect},#{itemCompose},#{manufactorId},#{price},#{itemState},
+		#{itemCategoryPrimary},#{itemCategorySub},#{brandId},#{createDate},#{sortFactor},#{evaluateBonusRate},
+		#{sharedBonusValue},#{discountRate},#{discountValue})
+	</insert>-->
+
+	<select id="selectById1" resultMap="BaseResultMap">
+		select * from shop_item i
+		WHERE i.id=#{item_id}
+	</select>
+	<!--商品模糊搜索-->
+	<select id="selectByKeyword"  resultMap="BaseResultMap">
+		SELECT item.* from shop_item item
+		LEFT JOIN shop_order_item_properties soip ON item.id=soip.item_id
+		WHERE item.item_name LIKE #{keyword}
+		AND item.item_state=1
+		GROUP BY item.id
+		<if test="#{order_price}!= null and order_price==0and order_count==0">
+			ORDER BY item.price DESC
+		</if>
+		<if test="#{order_price}!= null and order_price==0 and order_count==1">
+		ORDER BY item.price ASC
+	 </if>
+		<if test="#{order_price}!= null and order_price==1 and order_count==0">
+		ORDER BY SUM(soip.count) DESC
+	</if>
+		<if test="#{order_price}!= null and order_price==1 and order_count==1">
+		ORDER BY SUM(soip.count)  ASC
+	</if>
+	limit #{page_no},10
+	</select>
+	<!--商品模糊搜索-->
+	<select id="selectByKeywordAllState" resultMap="BaseResultMap">
+		SELECT * from shop_item
+		WHERE
+		item_name LIKE #{keyword}
+		limit #{page_no},10
+	</select>
+	<!--商品总数-->
+	<select id="selectAll" resultType="java.lang.Integer">
+		SELECT COUNT(*) from shop_item
+		WHERE
+		item_name LIKE #{keyword}
+		AND item_state=1
+	</select>
+     <!--按照分类进行搜索总条数-->
+	<select id="selectAllCategory" resultType="java.lang.Integer">
+		SELECT COUNT(*) from shop_item
+		WHERE item_name IN
+		<foreach collection="secValues" index="index" item="item"  open="(" close=")" separator=",">
+        #{item}
+		</foreach>
+		AND item_state =1
+	</select>
+	<!--搜索商品-->
+	<select id="selectByCategory" resultMap="BaseResultMap">
+		SELECT * from shop_item
+		WHERE item_name IN
+		<foreach collection="secValues" index="index" item="item"  open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+		AND item_state =1
+		limit #{page_no},10
+	</select>
+	<!--分类搜索-->
+	<select id="selectByKeyword1" resultMap="BaseResultMap">
+		SELECT item.* from shop_item item
+		LEFT JOIN shop_order_item_properties soip ON item.id=soip.item_id
+		WHERE item.item_name LIKE #{keyword}
+		AND item.item_state =1
+		AND item_category_primary=#{category_id}
+		GROUP BY item.id
+		<if test="#{order_price}!= null and order_price==0and order_count==0">
+			ORDER BY item.price DESC
+		</if>
+		<if test="#{order_price}!= null and order_price==0 and order_count==1">
+			ORDER BY item.price ASC
+		</if>
+		<if test="#{order_price}!= null and order_price==1 and order_count==0">
+			ORDER BY SUM(soip.count) DESC
+		</if>
+		<if test="#{order_price}!= null and order_price==1 and order_count==1">
+			ORDER BY SUM(soip.count)  ASC
+		</if>
+		limit #{page_no},10
+	</select>
+	<!--商品总数-->
+	<select id="selectAll1" resultType="java.lang.Integer">
+		SELECT COUNT(*) from shop_item
+		WHERE
+		item_name LIKE #{keyword}
+		AND item_state =1
+		AND item_category_primary=#{keyword}
+	</select>
+	<!--二级分类-->
+	<select id="selectByKeyword2" resultMap="BaseResultMap">
+		SELECT item.* from shop_item item
+		LEFT JOIN shop_order_item_properties soip ON item.id=soip.item_id
+		WHERE item.item_name LIKE #{keyword}
+		AND item.item_state =1
+		AND item_category_sub=#{category_id}
+		GROUP BY item.id
+		<if test="#{order_price}!= null and order_price==0and order_count==0">
+			ORDER BY item.price DESC
+		</if>
+		<if test="#{order_price}!= null and order_price==0 and order_count==1">
+			ORDER BY item.price ASC
+		</if>
+		<if test="#{order_price}!= null and order_price==1 and order_count==0">
+			ORDER BY SUM(soip.count) DESC
+		</if>
+		<if test="#{order_price}!= null and order_price==1 and order_count==1">
+			ORDER BY SUM(soip.count)  ASC
+		</if>
+		limit #{page_no},10
+	</select>
+	<!--商品总数-->
+	<select id="selectAll2" resultType="java.lang.Integer">
+		SELECT COUNT(*) from shop_item
+		WHERE
+		item_name LIKE #{keyword}
+		AND item_state =1
+		AND item_category_sub=#{category_id}
+	</select>
+</mapper>

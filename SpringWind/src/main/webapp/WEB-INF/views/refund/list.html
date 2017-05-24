@@ -1,0 +1,120 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>运营管理</a></li><li class="active"><strong>退款列表</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<input type="text" class="form-control" id="searchKey">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info" onclick="searchRefund()">搜索</button>
+			</span>
+		</div>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/operate/refund/getShopUserRefundList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'shopUser.nickname',
+        title: '申请人'
+    }, {
+        field: 'shopOrder.orderCode',
+        title: '订单号'
+    }, {
+        field: 'createDate',
+        title: '申请时间'
+    },{
+        field: 'refundState',
+        title: '退货状态',
+        formatter:function(value,row,index){
+            return showRefundState(value);
+        }
+    },  {
+        field: 'refundCharge',
+        title: '退货费用',
+        formatter:function(value,row,index){
+            return (value/100).toFixed(2);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="refundDetail(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>退货详情</a> ';
+        }
+    }
+    ];
+
+function editRefund(refunId) {
+    var title = "修改退货信息";
+    var url = "#springUrl('/operate/refund/edit')?refunId=" + refunId;
+    layer.open({
+        type: 2,
+        title: title,
+        shadeClose: true,
+        shade: 0.8,
+        area: ['450px', '430px'],
+        fix: false,
+        maxmin: true,
+        content: url
+    });
+}
+
+    function refundDetail(refundId){
+        var title = "退货详情";
+        var url = "#springUrl('/operate/refund/detail')?refundId=" + refundId;
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['800px', '600px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function searchRefund(){
+        var search = $.trim($("#searchKey").val());
+        var str = search.split(" ").join("");
+        var url = "#springUrl('/operate/refund/getShopUserRefundList')?searchKey="+str;
+        $("#dataTable").bootstrapTable("refresh",{url:url});
+    }
+
+    function showRefundState(num){
+        if(num==0){
+            return "退货中";
+        }
+        if(num==1){
+            return "退货完成";
+        }
+        if(num==2){
+            return "退货失败";
+        }
+    }
+
+</script>
+#end
+#extends("/common/framework.html")

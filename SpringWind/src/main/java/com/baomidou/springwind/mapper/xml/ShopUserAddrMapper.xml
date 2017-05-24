@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopUserAddrMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopUserAddr">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="contact" property="contact" />
+		<result column="address" property="address" />
+		<result column="deleted" property="deleted" />
+		<result column="mobile_phone" property="mobilePhone" />
+	</resultMap>
+	<select id="selectMaxId" resultType="java.lang.String" >
+		SELECT MIN(id) FROM shop_user_addr
+		WHERE user_id=#{user_id}
+		AND deleted=0
+	</select>
+</mapper>

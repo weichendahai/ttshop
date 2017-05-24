@@ -1,0 +1,75 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>系统参数</a></li><li class="active"><strong>参数管理</strong></li>
+#end
+#override("content")
+
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/extend/layer.ext.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/option/getOptionList.html')";
+    var dataColumns = [{
+        field: 'optionKey',
+        title: '序号'
+    },{
+        field: 'optionValue',
+        title: '参数值'
+
+    },{
+        field: 'optionDesc',
+        title: '参数描述'
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var optionKey = row.optionKey;
+            var optionValue = row.optionValue;
+            return '<a class="btn btn-xs btn-warning" onclick="editOption('+optionKey+',\''+optionValue+'\')"><i class="fa fa-pencil"></i>设置</a>';
+        }
+    }
+    ];
+
+    function editOption(optionKey,optionValue){
+        layer.prompt({title: '输入新的值', formType: 0,value:optionValue},function(val, index){
+            if ($.trim(val) == ""){
+                layer.msg("请输入正确的值");
+                return;
+            }
+            var closeIndex = index;
+            $.ajax({
+                url: "#springUrl('/option/edit.html')",
+                data: {optionKey:optionKey,newValue:val},
+                type: "POST",
+                success: function(data){
+                    var d = JSON.parse(data);
+                    if(d.success && d.data){
+                        layer.close(closeIndex);
+                        window.location.reload();
+                    }else {
+                        layer.msg("设置参数失败");
+                    }
+                }
+            });
+
+        });
+    }
+
+</script>
+#end
+#extends("/common/framework.html")

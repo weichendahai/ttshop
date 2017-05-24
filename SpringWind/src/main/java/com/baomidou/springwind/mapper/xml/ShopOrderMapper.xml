@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopOrderMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopOrder">
+		<id column="id" property="id" />
+		<result column="order_code" property="orderCode" />
+		<result column="user_id" property="userId" />
+		<result column="order_state" property="orderState" />
+		<result property="expressCode" column="express_code" />
+		<result column="order_total" property="orderTotal" />
+		<result column="order_addr_id" property="orderAddrId" />
+		<result column="freight" property="freight" />
+		<result column="user_coupon_id" property="userCouponId" />
+		<result column="user_gift_card_id" property="userGiftCardId" />
+		<result column="create_date" property="createDate" />
+		<result column="modify_date" property="modifyDate" />
+		<result column="trans_number" property="transNumber" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopOrder">
+		<id column="id" property="id" />
+		<result column="order_code" property="orderCode" />
+		<result column="user_id" property="userId" />
+		<result column="order_state" property="orderState" />
+		<result column="express_code" property="expressCode" />
+		<result column="order_total" property="orderTotal" />
+		<result column="order_addr_id" property="orderAddrId" />
+		<result column="freight" property="freight" />
+		<result column="user_coupon_id" property="userCouponId" />
+		<result column="user_gift_card_id" property="userGiftCardId" />
+		<result column="create_date" property="createDate" />
+		<result column="modify_date" property="modifyDate" />
+		<association property="shopUser" javaType="ShopUser" >
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+			<result column="head_image_addr" property="headImageAddr" />
+			<result column="mobile_phone" property="mobilePhone" />
+			<result column="date_of_birth" property="dateOfBirth" />
+			<result column="skin_type" property="skinType" />
+			<result column="email" property="email" />
+			<result column="default_addr" property="defaultAddr" />
+			<result column="shard_count" property="shardCount" />
+			<result column="evaluate_count" property="evaluateCount" />
+			<result column="shard_bonus" property="shardBonus" />
+			<result column="evaluate_bonus" property="evaluateBonus" />
+			<result column="open_id" property="openId" />
+			<result column="union_id" property="unionId" />
+			<result column="state" property="state" />
+		</association>
+	</resultMap>
+
+	<select id="getRecentDate" resultType="java.util.Date">
+		select max(create_date) from shop_order
+	</select>
+
+	<select id="selectMultiShopOrderList"  resultMap="multiResultMap" >
+		SELECT so.id,su.nickname,so.order_code,so.order_state,so.order_total,so.create_date,so.modify_date,so.express_code
+		FROM shop_order so
+		LEFT JOIN shop_user su on su.id=so.user_id
+		<if test=" sortField == 'createDate' ">
+			ORDER BY so.create_date DESC
+		</if>
+		<if test=" sortField == 'modifyDate' ">
+			ORDER BY so.modify_date DESC
+		</if>
+		<if test=" sortField == 'orderTotal' ">
+			ORDER BY so.order_total DESC
+		</if>
+		<if test=" _index != null and _size != null ">
+		limit #{_index},#{_size}
+		</if>
+	</select>
+
+	<select id="selectMultiShopOrderListTotal" resultType="int" >
+		SELECT count(so.id) cnt
+		FROM shop_order so
+		LEFT JOIN shop_user su on su.id=so.user_id
+		<where>
+			<include refid="select_one_order_where"></include>
+		</where>
+	</select>
+
+	<select id="selectMultiShopOrderListByMap" resultMap="multiResultMap">
+		SELECT so.id,su.nickname,so.order_code,so.order_state,so.order_total,so.create_date,so.modify_date,so.express_code,so.freight,so.order_addr_id
+		FROM shop_order so
+		LEFT JOIN shop_user su on su.id=so.user_id
+		<where>
+			<include refid="select_one_order_where"></include>
+		</where>
+		<if test=" sortField == 'orderState' ">
+			order BY so.order_state ASC
+		</if>
+		<if test=" sortField == 'createDate' ">
+			ORDER BY so.create_date DESC
+		</if>
+		<if test=" sortField == 'modifyDate' ">
+			ORDER BY so.modify_date DESC
+		</if>
+		<if test=" sortField == 'orderTotal' ">
+			ORDER BY so.order_total DESC
+		</if>
+		<if test=" _index != null and _size != null ">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+	<select id="selectMultiShopOrderListByMap1" resultMap="BaseResultMap">
+		SELECT so.id,su.nickname,so.order_code,so.order_state,so.order_total,so.create_date,so.modify_date,so.express_code,so.freight,so.order_addr_id
+		FROM shop_order so
+		LEFT JOIN shop_user su on su.id=so.user_id
+		<where>
+			<include refid="select_one_order_where"></include>
+		</where>
+		<if test=" sortField == 'orderState' ">
+			order BY so.order_state ASC
+		</if>
+		<if test=" sortField == 'createDate' ">
+			ORDER BY so.create_date DESC
+		</if>
+		<if test=" sortField == 'modifyDate' ">
+			ORDER BY so.modify_date DESC
+		</if>
+		<if test=" sortField == 'orderTotal' ">
+			ORDER BY so.order_total DESC
+		</if>
+		<if test=" _index != null and _size != null ">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+	<!--根据用户信息获取所有的订单信息-->
+	<select id="selectOrderByUserId" resultMap="BaseResultMap">
+		SELECT *FROM  shop_order
+		WHERE user_id=#{user_id}
+		<if test="order_state!=null and order_state!=-1">
+			AND order_state=#{order_state}
+		</if>
+		AND order_state!=4
+		ORDER BY create_date DESC
+		limit #{page_no},10
+	</select>
+	<sql id="select_one_order_where">
+		<if test=" searchKey != null and searchKey != '' ">
+			order_code=#{searchKey}
+		</if>
+		<if test=" nickname != null and nickname != '' ">
+			nickname LIKE '%${nickname}%'
+		</if>
+		<if test=" searchKey != null and searchKey != '' ">
+		OR 	express_code = #{searchKey}
+		</if>
+		<if test=" filterState != null and searchKey != '' ">
+			AND order_state = #{filterState}
+		</if>
+	</sql>
+	<!--获取发货的订单-->
+	<select id="selectUnDeliver" resultMap="BaseResultMap">
+            SELECT * FROM shop_order
+            WHERE order_state=1
+            limit 10
+	</select>
+	<!--获取导出订单的信息-->
+ </mapper>

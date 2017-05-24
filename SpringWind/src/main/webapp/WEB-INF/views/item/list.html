@@ -1,0 +1,259 @@
+#override("title")
+CiaoTalking - 商品管理
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>商品管理</a></li><li class="active"><strong>商品列表</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+            <span class="input-group-btn">
+				<!--<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()" >
+                    <option  selected="selected">排序</option>
+                    <option value="dateOfBirth" >生日</option>
+                    <option value="skinType" >肤质</option>
+                    <option value="shardCount" >分享数量</option>
+                    <option value="shardBonus" >分享佣金</option>
+                    <option value="evaluateCount" >点评数量</option>
+                    <option value="evaluateBonus" >点评佣金</option>
+                    <option value="state" >状态</option>
+                </select>-->
+			</span>
+			<input type="text" id="searchKey" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" id="searchItem" onclick="searchItem()" class="btn btn-info">搜索</button>
+			</span>
+		</div>
+		<button class="btn btn-primary" onclick="editItem(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加商品</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/item/getShopItemList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'itemName',
+        title: '商品名称'
+    },  {
+        field: 'itemState',
+        title: '状态',
+        formatter:function(value,row,index){
+            if(value==1){
+                return "上架";
+            }
+            if(value==0){
+                return "创建";
+            }
+            if(value==-1){
+                return "下架";
+            }
+        }
+    }, {
+        field: 'poShopItemCategory.categoryName',
+        title: '一级分类'
+    },{
+        field: 'poShopItemCategory.shopItemCategory.categoryName',
+        title: '二级分类'
+    },{
+        field: 'sortFactor',
+        title: '排序因子'
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            var state = row.itemState;
+            if(state==0||state==-1){
+                return '<a class="btn btn-xs btn-success " onclick="editItemState('+ "'" + id + "'," +"'" + state+"'" +')"><i ></i>上架</a> '+
+                        '<a class="btn btn-xs btn-warning" onclick="editItem('+id+')"><i class="fa fa-pencil"></i>编辑</a> '+
+                        '<a class="btn btn-xs btn-warning" onclick="delItem('+id+')"><i class="fa fa-remove"></i>删除</a>';
+            }
+            if(state==1){
+                return '<a class="btn btn-xs btn-warning" onclick="editItemState('+ "'" + id + "'," +"'" + state+"'" +')"><i ></i>下架</a> '+
+                        '<a class="btn btn-xs btn-warning" onclick="editItem('+id+')"><i class="fa fa-pencil"></i>编辑</a> '+
+                        '<a class="btn btn-xs btn-warning" onclick="delItem('+id+')"><i class="fa fa-remove"></i>删除</a>';
+            }
+        }
+    }
+    ];
+
+    /*function changeStateItem(itemId,type) {
+        //询问框
+        var state;
+        if(type==1){
+            state=='上架';
+        }
+        if(type==0){
+            state='下架';
+        }
+        layer.confirm('确定'+state+'吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/item/changeStateItem')" + itemId,
+                datatype: "text",
+                success: function (data) {
+                    if(data == 'true'){
+                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+                    }
+                    layer.closeAll();
+                }
+            });
+        }, function () {
+            return;
+        });
+    }*/
+
+    /*function recoverItem(itemId){
+        if(itemId!=null){
+            layer.confirm('确定恢复吗？',{btn:['确定','取消']},
+                    function(){
+                        $.ajax({
+                            type:"POST",
+                            url:"#springUrl('/item/recoverItem/')"+itemId,
+                            dataType:"text",
+                            success:function(data){
+                                if(data=='true'){
+                                    $("#dataTable").bootstrapTable('refresh',{url:dataUrl});
+                                }
+                                layer.closeAll();
+                            }
+                        });
+                    },
+                    function(){
+                        return;
+                    }
+            );
+        }
+    }*/
+
+    function delItem(itemId){
+        if(itemId!=null){
+            layer.confirm('确定删除吗？',{btn:['确定','取消']},
+                function(){
+                    $.ajax({
+                        type:"POST",
+                        url:"#springUrl('/item/delItem/')"+itemId,
+                        dataType:"text",
+                        success:function(data){
+                            if(data=='true'){
+                                $("#dataTable").bootstrapTable('refresh',{url:dataUrl});
+                            }
+                            layer.closeAll();
+                        }
+                    });
+                },
+                function(){
+                    return;
+                }
+            );
+        }
+    }
+
+    function editItemState(itemId,state){
+        var item = {'id':'','itemState':''};
+        item.id=itemId;
+        if(state==1){
+            item.itemState=-1;
+            var jsonStr  = JSON.stringify(item);
+            layer.confirm('确定下架吗？',{btn:['确定','取消']},function(){
+                $.ajax({
+                    type:'POST',
+                    url:"#springUrl('/item/updateItemState')",
+                    dataType:'json',
+                    contentType:'application/json',
+                    data:jsonStr,
+                    success:function(data) {
+                        if (data.data == true && data.success == true) {
+                            $("#dataTable").bootstrapTable('refresh', {url: dataUrl});
+                        } else {
+                            layer.confirm('下架失败!', {btn: ['确定']}, function () {
+                                layer.closeAll();
+                            });
+                        }
+                        layer.closeAll();
+                    }
+                });
+            },function(){
+                return;
+            });
+        } else{
+            item.itemState=1;
+            var jsonStr  = JSON.stringify(item);
+            layer.confirm('确定上架吗？',{btn:['确定','取消']},function(){
+                $.ajax({
+                    type:'POST',
+                    url:"#springUrl('/item/updateItemState')",
+                    dataType:'json',
+                    contentType:'application/json',
+                    data:jsonStr,
+                    success:function(data){
+                        if(data.data==true&&data.success==true){
+                            $("#dataTable").bootstrapTable('refresh',{url:dataUrl});
+                            layer.closeAll();
+                        }else{
+                            layer.closeAll();
+                            layer.confirm('上架失败!',{btn:['确定']},function(){layer.closeAll();});
+                        }
+                        if(data.success==false){
+                            layer.closeAll();
+                            layer.confirm(data.message,{btn:['确定']},function(){layer.closeAll();});
+                        }
+
+                    }
+                });
+            },function(){
+                return;
+            });
+        }
+    }
+
+function editItem(itemId){
+   	var title = "新增商品";
+   	var url;
+    if(itemId==null){
+        url="#springUrl('/item/edit')";
+    }else {
+   		title = "编辑商品";
+   		url = "#springUrl('/item/edit')?itemId=" + itemId;
+   	}
+    layer.open({
+        type: 2,
+        title: title,
+        shadeClose: false,
+        shade: 0.8,
+        area: ['800px', '600px'],
+        fix: false,
+        maxmin: true,
+        content: url
+    });
+}
+
+    function searchItem(){
+        var str = $.trim($("#searchKey").val());
+        var searchKey = str.split(" ").join("");
+        var url = "#springUrl('/item/getShopItemList')"+"?searchKey="+searchKey;
+        $("#dataTable").bootstrapTable("refresh",{url:url});
+    }
+</script>
+#end
+#extends("/common/framework.html")

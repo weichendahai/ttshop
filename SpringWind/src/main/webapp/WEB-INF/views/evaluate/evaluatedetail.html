@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 100%;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+        <div class="form-group"><label class="col-sm-4 control-label">商品名称：</label>
+            <div class="col-sm-8">
+                <label class=" control-label">$!{shopItemEvaluate.shopItem.itemName}</label>
+            </div>
+        </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">点评用户：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{shopItemEvaluate.shopUser.nickname}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">点评日期：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{shopItemEvaluate.createDate}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">点评分数：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{shopItemEvaluate.grade}</label>
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">优  点：</label>
+           <div class="col-sm-8" >
+               <!--<label class=" control-label text-left">$!{shopItemEvaluate.advantage}</label>-->
+               <textarea class="col-sm-11" style="background-color:transparent;width: 470px;height: 70px" readonly="true"  >$!{shopItemEvaluate.advantage}</textarea>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">缺  点：</label>
+           <div class="col-sm-8">
+               <!--<label class=" control-label">$!{shopItemEvaluate.disadvantage}</label>-->
+               <textarea class="col-sm-11" readonly="true" style="background-color:transparent;width: 470px;height: 70px" >$!{shopItemEvaluate.disadvantage}</textarea>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">点评佣金信息：</label>
+           <div class="col-sm-8">
+               <table id="dataTable"></table>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">点评图片：</label>
+           <div class="col-sm-8">
+               <img src="$!{shopItemEvaluate.evaluateImageAddr}" style="width:70px;height:70px;">
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">类比推荐：</label>
+           <div class="col-sm-8">
+               #foreach($item in $!{items})
+               <label   class="control-label">$!{item.itemName}</label><br/>
+               #end
+           </div>
+       </div>
+        <div class="form-group"><label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8">
+                <div class="col-sm-12 text-right">
+				        <button type="button" class="btn btn-info" onclick="cancelEvaluateDetail()"  >确定</button>
+				        <!--<button type="button" class="btn btn-info" onclick="cancelOrderDetail()" >取消</button>-->
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/jquery-ui.custom.min.js')"></script>
+<script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list_a.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    function cancelEvaluateDetail(){
+        //当你在iframe页面关闭自身时
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+    }
+
+    var Request = {
+        QueryString : function(val) {
+            var uri = window.location.search;
+            var re = new RegExp("" +val+ "=([^&?]*)", "ig");
+            return ((uri.match(re))?(uri.match(re)[0].substr(val.length+1)):"");
+        }
+    }
+
+    /*$("#myForm").validator({
+        valid: function(form){
+            var me = this;
+            // 提交表单之前，hold住表单，防止重复提交
+            me.holdSubmit();
+            $.ajax({
+                url: "#springUrl('/order/update')",
+                data: $(form).serialize(),
+                type: "POST",
+                success: function(data){
+                    var d = JSON.parse(data);
+                    if(d.success&&d.data ){
+                        window.parent.location.reload();
+                        //当你在iframe页面关闭自身时
+                        //var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        //parent.layer.close(index); //再执行关闭
+                    } else {
+                        //失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                        me.holdSubmit(false);
+                    }
+                }
+            });
+        }
+    });
+*/
+
+    var evaluateId = Request.QueryString("evaluateId")
+    var dataUrl = "#springUrl('/operate/evaluate/detail/bonus')?evaluateId="+evaluateId;
+    var dataColumns = [  {
+        field: 'shopOrder.orderCode',
+        title: '订单号'
+    },{
+        field: 'shopUser.nickname',
+        title: '点评用户'
+    }, {
+        field: 'shopItem.itemName',
+        title: '点评商品'
+    },{
+        field: 'createDate',
+        title: '下单时间',
+        formatter:function(value,row,index){
+            return formatDate(value);
+        }
+    },{
+        field: 'bonus',
+        title: '佣金额度(单位/元)',
+        formatter: function (value,row,index) {
+            return (value/100).toFixed(2);
+        }
+    }
+    ];
+
+</script>
+</body>
+</html>

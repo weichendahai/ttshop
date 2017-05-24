@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopBannerMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopBanner">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="state" property="state" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="poster_image_addr" property="posterImageAddr" />
+	</resultMap>
+
+	<!--<resultMap id="selectBaseResultMap" type="com.baomidou.springwind.entity.po.PoBanner">
+		<id column="id" property="id" />
+		<result column="item_name" property="itemName" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="poster_image_addr" property="posterImageAddr" />
+	</resultMap>-->
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopBanner">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="state" property="state" />
+		<result column="poster_image_addr" property="posterImageAddr" />
+		<association property="shopItem" javaType="ShopItem" >
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+		</association>
+	</resultMap>
+
+	<select id="selectShopBannerList" resultType="PoBanner">
+		SELECT sb.id,si.item_name,sb.poster_image_addr,sb.sort_factor from shop_banner sb RIGHT JOIN shop_item si on sb.item_id=si.id
+	</select>
+
+	<select id="selectMultiShopBanner" resultMap="multiResultMap">
+		SELECT sb.id,si.item_name,sb.sort_factor,sb.poster_image_addr,sb.item_id,sb.state
+		FROM shop_banner sb
+		LEFT JOIN shop_item si on sb.item_id = si.id
+		<if test=" bannerId != null " >
+			WHERE sb.id=#{bannerId}
+		</if>
+		ORDER BY sb.sort_factor ASC
+		<if test=" _index != null and _size != null">
+			limit #{_index},#{_size}
+		</if>
+
+	</select>
+	<select id="selectMultiShopBannerCount" resultType="int">
+		SELECT COUNT(sb.id) cnt
+		FROM shop_banner sb
+		LEFT JOIN shop_item si on sb.item_id = si.id
+	</select>
+
+	<!--查询未添加轮播图的商品-->
+	<select id="selectShopItemNameBannerList" resultMap="multiResultMap">
+		SELECT si.id,si.item_name,sb.item_id,sb.id,sb.poster_image_addr FROM shop_item si
+		LEFT JOIN shop_banner sb on si.id=sb.item_id
+		WHERE sb.item_id IS NULL
+		<if test=" _index != null and _size != null">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ServerMapper">
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopBanner">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="sort_factor" property="sortFactor" />
+		<result column="poster_image_addr" property="posterImageAddr" />
+	</resultMap>
+	<!--获取爆款信息返回结果-->
+	<resultMap id="HotItemResultMap" type="com.baomidou.springwind.entity.ShopHotItem">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="item_name" property="itemName" />
+		<result column="item_icon_addr" property="itemIconAddr" />
+		<result column="evaluate_count" property="evaluateCount" />
+		<result column="grade" property="grade" />
+		<result column="price" property="price" />
+		<result column="advantage" property="advantage" />
+		<result column="sort_factor" property="sortFactor" />
+	</resultMap>
+	<!--获取商品描述详情-->
+	<resultMap id="ItemInfoResultMap" type="com.baomidou.springwind.entity.ShopItemInfo">
+		<id column="id" property="id" />
+		<result column="evaluate_user_id" property="evaluateUserId" />
+		<result column="shared_user_id" property="sharedUserId" />
+		<result column="item_name" property="itemName" />
+		<result column="item_id" property="id" />
+		<result column="item_big_image_addr" property="itemBigImageAddr" />
+		<result column="order_count" property="orderCount" />
+		<result column="price" property="price" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="grade" property="grade" />
+		<result column="evaluate_count" property="evaluateCount" />
+		<result column="shared_count" property="sharedCount" />
+		<result column="item_desc" property="itemDesc" />
+		<result column="distribution_type" property="distributionType" />
+		<result column="distribution_sub" property="distributionSub" />
+		<result column="distribution_count" property="distributionCount" />
+	</resultMap>
+	<!--商品属相名-->
+	<resultMap id="proResultMap" type="com.baomidou.springwind.entity.ShopItemProperties">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+	</resultMap>
+	<!--商品属性文件 -->
+	<resultMap id="proValueResultMap" type="com.baomidou.springwind.entity.ShopItemPropertiesValues">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId"/>
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="property_desc" property="propertyDesc" />
+	</resultMap>
+	<!-- 描述查询映射结果 -->
+	<resultMap id="DiscResultMap" type="com.baomidou.springwind.entity.ShopItemUserDistribution">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="type" property="type" />
+		<result column="sub" property="sub" />
+		<result column="count" property="count" />
+	</resultMap>
+	<!--评价查询结果-->
+	<resultMap id="UseEvMap" type="com.baomidou.springwind.entity.ShopUserEvaluate">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId"/>
+		<result column="evaluate_id" property="evaluateId"/>
+		<result column="user_head_image_addr" property="userHeadImageAdd"/>
+		<result column="user_nickname" property="userNickname"/>
+		<result column="user_evaluate_count" property="userEvaluateCoun"/>
+		<result column="user_shared_count" property="userSharedCount"/>
+		<result column="user_date_of_birth" property="userDateOfBirth"/>
+		<result column="grade" property="grade"/>
+		<result column="item_advantage" property="itemAdvantage"/>
+		<result column="item_disadvatage" property="itemDisadvatage"/>
+		<result column="create_date" property="createDate"/>
+	</resultMap>
+	<!--用户信息-->
+	<resultMap id="ShopUserMap" type="com.baomidou.springwind.entity.ShopUser">
+		<id column="id" property="id" />
+		<result column="nickname" property="nickname" />
+		<result column="sex" property="sex" />
+		<result column="head_image_addr" property="headImageAddr" />
+		<result column="mobile_phone" property="mobilePhone" />
+		<result column="date_of_birth" property="dateOfBirth" />
+		<result column="skin_type" property="skinType" />
+		<result column="email" property="email" />
+		<result column="default_addr" property="defaultAddr" />
+		<result column="shard_count" property="shardCount" />
+		<result column="evaluate_count" property="evaluateCount" />
+		<result column="shard_bonus" property="shardBonus" />
+		<result column="evaluate_bonus" property="evaluateBonus" />
+		<result column="open_id" property="openId" />
+		<result column="union_id" property="unionId" />
+		<result column="state" property="state" />
+	</resultMap>
+	<!--订单信息-->
+	<resultMap id="ShopOrderMap" type="com.baomidou.springwind.entity.ShopOrder">
+		<id column="id" property="id" />
+		<result column="order_code" property="orderCode" />
+		<result column="user_id" property="userId" />
+		<result column="order_state" property="orderState" />
+		<result column="order_total" property="orderTotal" />
+		<result column="order_addr_id" property="orderAddrId" />
+		<result column="freight" property="freight" />
+		<result column="user_coupon_id" property="userCouponId" />
+		<result column="user_gift_card_id" property="userGiftCardId" />
+		<result column="create_date" property="createDate" />
+		<result column="modify_date" property="modifyDate" />
+	</resultMap>
+	<!--商品订单绑定-->
+	<resultMap id="ShopOrderItemMap" type="com.baomidou.springwind.entity.ShopOrderItem">
+		<id column="id" property="id" />
+		<result column="order_id" property="orderId" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="price" property="price" />
+		<result column="count" property="count" />
+	</resultMap>
+	<!--商品信息-->
+	<resultMap id="ShopItemMap" type="com.baomidou.springwind.entity.ShopItem">
+		<id column="id" property="id" />
+		<result column="item_name" property="itemName" />
+		<result column="item_icon_addr" property="itemIconAddr" />
+		<result column="info_image_addrs" property="infoImageAddrs" />
+		<result column="info_big_image_addr" property="infoBigImageAddr" />
+		<result column="item_effect" property="itemEffect" />
+		<result column="item_compose" property="itemCompose" />
+		<result column="manufactor_id" property="manufactorId" />
+		<result column="price" property="price" />
+		<result column="item_state" property="itemState" />
+		<result column="item_category_primary" property="itemCategoryPrimary" />
+		<result column="item_category_sub" property="itemCategorySub" />
+		<result column="brand_id" property="brandId" />
+		<result column="create_date" property="createDate" />
+		<result column="sort_factor" property="sortFactor" />
+	</resultMap>
+	<!--订单地址表-->
+	<resultMap id="ShopUserAddrResultMap" type="com.baomidou.springwind.entity.ShopUserAddr">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="contact" property="contact" />
+		<result column="address" property="address" />
+		<result column="mobile_phone" property="mobilePhone" />
+	</resultMap>
+	<resultMap id="ShopUserRefundMap" type="com.baomidou.springwind.entity.ShopUserRefund">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="order_id" property="orderId" />
+		<result column="item_id" property="itemId" />
+		<result column="create_date" property="createDate" />
+		<result column="reason" property="reason" />
+		<result column="info" property="info" />
+		<result column="image_addr" property="imageAddr" />
+		<result column="refund_state" property="refundState" />
+		<result column="refund_type" property="refundType" />
+		<result column="refund_charge" property="refundCharge" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, rid, pid
+	</sql>
+    <!--查询所有的banner信息-->
+	<select id="getBannerList" resultMap="BaseResultMap">
+		SELECT id ,item_id,poster_image_addr,sort_factor
+		FROM shop_banner
+		ORDER BY sort_factor DESC
+	</select>
+
+	<!--获取爆款信息-->
+	<select id="getHotitemList" resultMap="HotItemResultMap" >
+	SELECT *
+	FROM shop_hot_item
+	ORDER BY sort_factor ASC
+   </select>
+	<select id="getHotitemList1" resultMap="HotItemResultMap" >
+		SELECT *
+		FROM shop_hot_item
+		/*WHERE season_no=(SELECT max(season_no) FROM shop_hot_item)*/
+		ORDER BY sort_factor DESC
+	</select>
+<!--获取商品描述-->
+	<select id="getItemInfo" resultMap="ItemInfoResultMap"  parameterType="java.lang.String" >
+SELECT
+   e.user_id AS evaluate_user_id,s.user_id AS shared_user_id,i.id AS item_id ,i.item_name,i.info_big_image_addr AS item_big_image_addr,si.count AS order_count,i.price,p.property_key,p.property_value,grade,(SELECT count(*) FROM shop_item_evaluate a WHERE a.item_id=#{item_id}) AS evaluate_count,(SELECT count(*)FROM shop_evaluate_shared b WHERE b.evaluate_id= #{evaluate_user_id}) AS shared_count ,i.item_effect AS item_desc,d.type AS distribution_type,d.sub AS distribution_sub,d.count AS distribution_count
+   FROM  shop_item  i
+   JOIN shop_item_evaluate e ON  i.id=e.item_id
+   JOIN shop_evaluate_shared s ON  e.user_id=s.evaluate_id
+   JOIN shop_item_user_distribution d ON d.item_id=i.id
+   JOIN shop_item_properties p ON p.item_id=i.id
+   JOIN shop_order_item si ON si.item_id=i.id
+  WHERE  i.id=#{item_id}
+   AND  e.id=#{evaluate_user_id}
+   AND  s.user_id=#{shared_user_id}
+ </select>
+	    <!--getProps属性信息-->
+	<select id="getProps" resultMap="proResultMap" parameterType="java.lang.String">
+	SELECT * FROM shop_item_properties	 p
+	WHERE p.item_id=#{item_id}
+	</select>
+	   <!--根据proKey获取所有的商品描述-->
+	<select id="getPvalues" resultMap="proValueResultMap" parameterType="java.lang.String">
+		SELECT * FROM shop_item_properties	 p
+		WHERE p.item_id=#{item_id}
+		AND   p.property_key=#{property_key}
+	</select>
+	    <!--获取商品详情的用户描述-->
+	<select id="getDistributions" resultMap="DiscResultMap" parameterType="java.lang.String">
+		SELECT * FROM shop_item_user_distribution	 d
+		WHERE d.item_id=#{item_id}
+	</select>
+	<!--根据type计算value-->
+	<select id="getDvalues" resultMap="DiscResultMap" parameterType="java.lang.String">
+		SELECT * FROM shop_item_user_distribution	 d
+		WHERE d.item_id=#{item_id}
+		AND   d.type=#{distribution_type}
+	</select>
+	<!--获取商品详情-->
+	<select id="getItemDesc" resultType="string" parameterType="java.lang.String">
+    SELECT info_image_addrs FROM shop_item i
+     WHERE  i.id=#{item_id}
+	</select>
+	<!--获取商品评价列表-->
+	<select id="getItemevaluateList" resultMap="UseEvMap" parameterType="java.lang.String">
+    SELECT u.id As user_id,e.id AS evaluate_id, u.head_image_addr AS user_head_image_addr,u.nickname AS user_nickname,u.evaluate_count AS user_evaluate_count,u.shard_count AS user_shared_count,u.date_of_birth AS user_date_of_birth,e.grade AS grade,e.advantage AS item_advantage,e.disadvantage AS item_disadvatage,e.create_date AS create_date	FROM  shop_item_evaluate e
+    JOIN shop_user u ON e.user_id=u.id
+    WHERE e.item_id=#{item_id}
+	</select>
+	<!--获取用户基本信息-->
+	<select id="getUserInfo" resultMap="ShopUserMap" parameterType="java.lang.String">
+    SELECT  * FROM shop_user u WHERE u.id=#{user_id}
+	</select>
+	<!--修改用户基本信息-->
+	<update id="changeNickname" >
+		UPDATE shop_user u SET u.nickname=#{new_value}
+             WHERE u.id =#{user_id}
+	</update>
+	<update id="changeSkinType" parameterType="java.lang.Integer" >
+		UPDATE shop_user u SET u.skin_type=#{new_value}
+		WHERE u.id =#{user_id}
+	</update>
+	<update id="changeSex" parameterType="java.lang.Integer" >
+		UPDATE shop_user u SET u.sex=#{new_value}
+		WHERE u.id =#{user_id}
+	</update>
+	<update id="changeDate" parameterType="java.lang.String" >
+		UPDATE shop_user u SET u.date_of_birth=#{new_value}
+		WHERE u.id =#{user_id}
+	</update>
+	<!--获取用户订单列表-->
+	<select id="getOrderInfo" resultMap="ShopOrderMap" parameterType="java.lang.String">
+		SELECT * FROM shop_order o
+		WHERE o.id=#{order_id} AND o.user_id=#{user_id}
+	</select>
+	<select id="getOrderById" resultMap="ShopOrderMap" >
+		SELECT * FROM shop_order o
+		WHERE o.id=#{order_id}
+	</select>
+	<select id="getItemId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT i.item_id FROM shop_order_item i
+		WHERE  i.order_id=#{order_id}
+	</select>
+	<select id="getUserAddr" parameterType="java.lang.String" resultMap="ShopUserAddrResultMap">
+		SELECT * FROM shop_user_addr a
+		WHERE  a.user_id=#{user_id}
+	</select>
+	<select id="getUserAddrById" parameterType="java.lang.String" resultMap="ShopUserAddrResultMap">
+		SELECT * FROM shop_user_addr a
+		WHERE  a.id=#{AddrId}
+	</select>
+	<select id="getItemById" parameterType="java.lang.Long" resultMap="ShopItemMap">
+		SELECT * FROM shop_item i
+		WHERE  i.id=#{ItemsId}
+	</select>
+	<select id="getItemOrder" parameterType="java.lang.Long" resultMap="ShopOrderItemMap">
+		SELECT * FROM shop_order_item i
+		WHERE  i.item_id=#{ItemsId} AND i.order_id=#{order_id}
+	</select>
+	<!--获取订单列表-->
+	<select id="getOrderList" parameterType="java.lang.String" resultMap="ShopOrderMap">
+		SELECT * FROM shop_order o
+		WHERE  o.user_id=#{user_id}
+	</select>
+	<!--申请退款-->
+	<!---->
+		<insert id="requestRefund" parameterType="com.baomidou.springwind.entity.ShopUserRefund" >
+			insert into
+			 shop_user_refund
+			(user_id,order_id,item_id,refund_type,create_date,reason,info,image_addr,refund_state)
+			values
+			( #{uf.userId},#{uf.orderId},#{uf.itemId},#{uf.refundType},#{uf.createDate},#{uf.reason},#{uf.info},#{uf.imageAddr},0)
+			<selectKey resultType="Integer" order="AFTER" keyProperty="uf.id">
+				SELECT LAST_INSERT_ID() AS id
+			</selectKey>
+		</insert>
+	<!--获取退款列表-->
+	<select id="getreFundList" parameterType="java.lang.String" resultMap="ShopUserRefundMap">
+    SELECT * FROM shop_user_refund r
+    WHERE r.user_id=#{user_id}
+	</select>
+	<!--获取商品信息-->
+	<select id="getProperties" parameterType="java.lang.Long" resultMap="proResultMap">
+		SELECT * FROM shop_item_properties p
+		WHERE  p.item_id=#{itemId}
+	</select>
+	<!--新增收货地址-->
+	<insert id="insertAddrO" parameterType="com.baomidou.springwind.entity.ShopUserAddr">
+		insert into shop_user_addr
+		(user_id,contact,address,mobile_phone,deleted)
+		values
+		(#{addr.userId},#{addr.contact},#{addr.address},#{addr.mobilePhone},#{addr.deleted})
+		<selectKey resultType="Integer" order="AFTER" keyProperty="addr.id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+
+</mapper>

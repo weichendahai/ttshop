@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopItemEvaluateMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopItemEvaluate">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="item_id" property="itemId" />
+		<result column="advantage" property="advantage" />
+		<result column="disadvantage" property="disadvantage" />
+		<result column="evaluate_image_addr" property="evaluateImageAddr" />
+		<result column="evaluate_vedio_addr" property="evaluateVedioAddr" />
+		<result column="other_item_ids" property="otherItemIds" />
+		<result column="grade" property="grade" />
+		<result column="create_date" property="createDate" />
+		<result column="evaluate_state" property="evaluateState" />
+	</resultMap>
+	<resultMap id="UseEvMap" type="com.baomidou.springwind.entity.ShopUserEvaluate">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId"/>
+		<result column="evaluate_id" property="evaluateId"/>
+		<result column="user_head_image_addr" property="userHeadImageAdd"/>
+		<result column="user_nickname" property="userNickname"/>
+		<result column="user_evaluate_count" property="userEvaluateCoun"/>
+		<result column="user_shared_count" property="userSharedCount"/>
+		<result column="evaluate_image_addr" property="evaluateImageAddr" />
+		<result column="user_date_of_birth" property="userDateOfBirth"/>
+		<result column="grade" property="grade"/>
+		<result column="item_advantage" property="itemAdvantage"/>
+		<result column="item_disadvatage" property="itemDisadvatage"/>
+		<result column="create_date" property="createDate"/>
+		<result column="evaluate_state" property="evaluateState" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopItemEvaluate">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="item_id" property="itemId" />
+		<result column="advantage" property="advantage" />
+		<result column="disadvantage" property="disadvantage" />
+		<result column="evaluate_image_addr" property="evaluateImageAddr" />
+		<result column="evaluate_vedio_addr" property="evaluateVedioAddr" />
+		<result column="other_item_ids" property="otherItemIds" />
+		<result column="grade" property="grade" />
+		<result column="create_date" property="createDate" />
+		<result column="evaluate_state" property="evaluateState" />
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+			<result column="item_icon_addr" property="itemIconAddr" />
+			<result column="info_image_addrs" property="infoImageAddrs" />
+			<result column="info_big_image_addr" property="infoBigImageAddr" />
+			<result column="item_effect" property="itemEffect" />
+			<result column="item_compose" property="itemCompose" />
+			<result column="manufactor_id" property="manufactorId" />
+			<result column="price" property="price" />
+			<result column="item_state" property="itemState" />
+			<result column="item_category_primary" property="itemCategoryPrimary" />
+			<result column="item_category_sub" property="itemCategorySub" />
+			<result column="brand_id" property="brandId" />
+			<result column="create_date" property="createDate" />
+			<result column="sort_factor" property="sortFactor" />
+			<result column="evaluate_bonus_rate" property="evaluateBonusRate" />
+			<result column="evaluate_bonus_value" property="evaluateBonusValue" />
+			<result column="shared_bonus_rate" property="sharedBonusRate" />
+			<result column="shared_bonus_value" property="sharedBonusValue" />
+		</association>
+		<association property="shopUser" javaType="ShopUser">
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+			<result column="head_image_addr" property="headImageAddr" />
+			<result column="mobile_phone" property="mobilePhone" />
+			<result column="date_of_birth" property="dateOfBirth" />
+			<result column="skin_type" property="skinType" />
+			<result column="email" property="email" />
+			<result column="default_addr" property="defaultAddr" />
+			<result column="shard_count" property="shardCount" />
+			<result column="evaluate_count" property="evaluateCount" />
+			<result column="shard_bonus" property="shardBonus" />
+			<result column="evaluate_bonus" property="evaluateBonus" />
+			<result column="open_id" property="openId" />
+			<result column="union_id" property="unionId" />
+			<result column="state" property="state" />
+		</association>
+	</resultMap>
+
+<!--获取ShopItemEvaluate-->
+	<select id="selectShopItemEvaluate" parameterType="java.lang.String" resultMap="BaseResultMap">
+           SELECT * FROM shop_item_evaluate e
+           WHERE e.user_id=#{user_id}
+	</select>
+
+	<sql id="select_evaluate_where" >
+		sie.evaluate_state=0
+		<if test=" evaluateId != null ">
+			and sie.id=#{evaluateId}
+		</if>
+		<if test="userId != null ">
+			and su.id=#{userId}
+		</if>
+		<if test="itemId != null ">
+			AND si.id=#{itemId}
+		</if>
+		<if test=" searchKey != null   ">
+			and si.item_name LIKE '%${searchKey}%'  OR su.nickname LIKE '%${searchKey}%'
+		</if>
+	</sql>
+
+	<!--查询所有未删除的点评-->
+	<select id="selectEvaluateListAll" resultMap="multiResultMap">
+		SELECT sie.id,sie.grade,sie.create_date,sie.advantage,sie.disadvantage,sie.other_item_ids,si.item_name,su.nickname,sie.evaluate_image_addr,sie.evaluate_vedio_addr
+		FROM shop_item_evaluate sie
+		LEFT JOIN shop_item si on si.id = sie.item_id
+		LEFT JOIN shop_user su on su.id = sie.user_id
+		<where>
+			<include refid="select_evaluate_where"></include>
+		</where>
+		<if test=" _index != null and _size != null">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+
+	<!--查询所有未删除点评的数量-->
+	<select id="selectEvaluateListAllCount" resultType="int">
+		SELECT COUNT(sie.id) cnt
+		FROM shop_item_evaluate sie
+		LEFT JOIN shop_item si on si.id = sie.item_id
+		LEFT JOIN shop_user su on su.id = sie.user_id
+		<where>
+			<include refid="select_evaluate_where"></include>
+		</where>
+	</select>
+
+	<!--根据前端需要显示点评列表的信息-->
+	<select id="selectMultiShopItemEvaluateList" resultMap="multiResultMap">
+		SELECT sie.id,sie.grade,sie.create_date,sie.advantage,sie.disadvantage,si.item_name,su.nickname,sie.evaluate_image_addr,sie.evaluate_vedio_addr
+		FROM shop_item_evaluate sie
+		LEFT JOIN shop_item si on si.id = sie.item_id
+		LEFT JOIN shop_user su on su.id = sie.user_id
+		<where>
+			<include refid="select_evaluate_where"></include>
+		</where>
+		<if test="groupField == 'itemId' ">
+			GROUP BY sie.item_id
+		</if>
+		<if test="groupField == 'userId' ">
+			GROUP BY sie.user_id
+		</if>
+		<if test="sortField == 'grade' " >
+			ORDER BY sie.grade DESC
+		</if>
+		<if test="sortField == 'createDate' " >
+			ORDER BY sie.create_date DESC
+		</if>
+		<if test="_index != null and _size != null ">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+	<!--根据前端需要显示点评列表的信息的数量-->
+	<select id="selectMultiShopItemEvaluateCount" resultType="int">
+		SELECT
+		<if test=" countField == 'userId' ">
+		count(zz.user_id)
+		</if>
+		<if test=" countField == 'itemId' ">
+			count(zz.item_id)
+		</if>
+		FROM (
+		SELECT
+		<if test=" countField == 'userId' ">
+			sie.user_id
+		</if>
+		<if test=" countField == 'itemId' ">
+			sie.item_id
+		</if>
+		FROM shop_item_evaluate sie
+		LEFT JOIN shop_item si on si.id = sie.item_id
+		LEFT JOIN shop_user su on su.id = sie.user_id
+		<where>
+			<include refid="select_evaluate_where"></include>
+		</where>
+		<if test="groupField == 'itemId' ">
+			GROUP BY sie.item_id
+		</if>
+		<if test="groupField == 'userId' ">
+			GROUP BY sie.user_id
+		</if>)
+	</select>
+
+
+	<!--获取产品的点评数-->
+	<select id="selectCountByuserId" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM
+		shop_item_evaluate
+		WHERE item_id=#{item_id}
+	</select>
+	<!--获取所有点评ids-->
+	<select id="selectEIds" resultType="java.lang.String">
+		SELECT id FROM shop_item_evaluate
+		WHERE item_id=#{item_id}
+	</select>
+	<!--获取评分-->
+	<select id="getGrade" resultType="Integer">
+		SELECT AVG(grade)FROM shop_item_evaluate
+		WHERE item_id=#{item_id}
+		 AND   evaluate_state=0
+	</select>
+	<select id="getItemevaluateList" resultMap="UseEvMap" >
+		SELECT u.id As user_id,e.id AS evaluate_id, u.head_image_addr AS user_head_image_addr,u.nickname AS user_nickname,u.evaluate_count AS user_evaluate_count,u.shard_count AS user_shared_count,u.date_of_birth AS user_date_of_birth,e.grade AS grade,e.advantage AS item_advantage,e.disadvantage AS item_disadvatage,e.create_date AS create_date,e.evaluate_image_addr AS evaluateImageAddr	FROM  shop_item_evaluate e
+		JOIN shop_user u ON e.user_id=u.id
+		WHERE e.item_id=#{item_id}
+		AND   e.evaluate_state=0
+		limit #{page_no},10
+	</select>
+	<!--获取用户对应的所有的点评记录-->
+   <select id="shopItemEvaluateByuserId" resultMap="BaseResultMap" >
+	 SELECT * FROM shop_item_evaluate
+	 WHERE user_id=#{user_id}
+	 AND   evaluate_state=0
+	 ORDER BY create_date DESC
+	 limit  #{page_no},10
+   </select>
+</mapper>

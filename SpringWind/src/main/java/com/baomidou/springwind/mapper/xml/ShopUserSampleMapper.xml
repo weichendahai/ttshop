@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopUserSampleMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopUserSample">
+		<id column="id" property="id" />
+		<result column="sample_id" property="sampleId" />
+		<result column="user_id" property="userId" />
+		<result column="state" property="state" />
+	</resultMap>
+	<!--根据用户id获取对象-->
+	<select id="selectByUserid" resultMap="BaseResultMap">
+		SELECT * FROM shop_user_sample s
+		WHERE s.user_id=#{user_id}
+		limit #{page_no},10
+	</select>
+	<!--根据用户操作修改用户状态-->
+	<update id="applySample" parameterType="java.lang.String">
+		UPDATE shop_user_sample
+		SET state=#{state}
+		WHERE user_id=#{user_id}
+		AND   sample_id=#{sample_id}
+	</update>
+	<select id="selectAll"  resultMap="BaseResultMap">
+		SELECT * FROM shop_user_sample
+		limit #{page_no},10
+	</select>
+	<!--试用管理的9中策略：start-->
+	<!--全随机-->
+	<select id="getSampleIds" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		WHERE su.state=0
+	</select>
+	<!--订单数量大于x-->
+	<select id="SampleByOrderCount" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+    LEFT JOIN  shop_order so
+		ON sus.user_id=so.user_id
+		WHERE su.state=0
+		AND (SELECT COUNT(so.id) FROM shop_order WHERE so.user_id=sus.user_id)>=#{x}
+	</select>
+   <!--点评数大于x的-->
+	<select id="SampleByEvateCount" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		WHERE su.state=0
+		AND su.evaluate_count>=#{x}
+	</select>
+	<!--按照分享总数大于x-->
+	<select id="SampleBySharedCount" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		WHERE su.state=0
+		AND su.shard_count>=#{x}
+	</select>
+	<!--按照消费总额大于x-->
+	<select id="SampleByMoneyCount" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		LEFT JOIN shop_order so
+		ON sus.user_id=so.user_id
+		WHERE su.state=0
+		AND (SELECT COUNT(so.order_total) FROM shop_order WHERE so.user_id=sus.user_id)>=#{x}
+	</select>
+	<!--按照订单总量选x个-->
+	<select id="SampleByOrderTotal" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		LEFT JOIN shop_order so
+		ON sus.user_id=so.user_id
+		WHERE su.state=0
+		ORDER BY (SELECT COUNT(so.id) FROM shop_order WHERE so.user_id=sus.user_id)
+		limit #{x}
+	</select>
+	<!--点评总量的前x个-->
+	<select id="SampleByEvalteTotal" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		WHERE su.state=0
+		ORDER BY su.evaluate_count
+		limit #{x}
+	</select>
+	<!--点评总量的前x个-->
+	<select id="SampleBySharedTotal" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		WHERE su.state=0
+		ORDER BY su.shard_count
+		limit #{x}
+	</select>
+	<!--按照消费总金额的前x个-->
+	<select id="SampleByMoneyTotal" resultType="java.lang.String">
+		SELECT DISTINCT sus.id FROM shop_user_sample sus
+		LEFT JOIN  shop_user su
+		ON sus.user_id=su.id
+		LEFT JOIN shop_order so
+		ON sus.user_id=so.user_id
+		WHERE su.state=0
+		ORDER BY (SELECT COUNT(so.order_total) FROM shop_order WHERE so.user_id=sus.user_id)
+		limit #{x}
+	</select>
+</mapper>

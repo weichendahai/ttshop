@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopFeedbackMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopFeedback">
+		<id column="id" property="id" />
+		<result column="create_date" property="createDate" />
+		<result column="fid" property="fid" />
+		<result column="from" property="from" />
+		<result column="content" property="content" />
+		<result column="img_addr" property="imgAddr" />
+		<result column="read_date" property="readDate" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopFeedback">
+		<id column="id" property="id" />
+		<result column="create_date" property="createDate" />
+		<result column="fid" property="fid" />
+		<result column="from" property="from" />
+		<result column="content" property="content" />
+		<result column="img_addr" property="imgAddr" />
+		<result column="read_date" property="readDate" />
+		<association property="shopUser" javaType="ShopUser">
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+		</association>
+	</resultMap>
+
+ <!--获取反馈列表-->
+	<select id="selectByUserId" resultMap="BaseResultMap">
+		SELECT  * FROM shop_feedback sf
+		WHERE sf.from=#{user_id}
+		AND   sf.fid=0
+		limit #{page_no},10
+	</select>
+
+	<!--显示用户反馈的主题列表或者主题下的信息列表-->
+	<select id="selectShopFeedbackThemeList" resultMap="multiResultMap">
+		SELECT sfb.id ,sfb.create_date,sfb.`from`,sfb.img_addr,sfb.content, su.id,su.nickname,sfb.read_date
+		FROM shop_feedback sfb LEFT JOIN shop_user su ON sfb.`from`=su.id
+		<if test=" fid != null">
+			WHERE sfb.fid=#{fid}
+		</if>
+		<if test=" feedbackId != null">
+			WHERE sfb.fid=#{feedbackId}
+		</if>
+		<if test=" searchKey != null ">
+			sfb.content LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+		</if>
+		<if test=" _index != null and _size != null ">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+	<!--显示用户反馈的主题列表的数量-->
+	<select id="selectShopFeedbackThemeCount" resultType="int">
+		SELECT COUNT(sfb.id) cnt
+		FROM shop_feedback sfb LEFT JOIN shop_user su ON sfb.`from`=su.id
+		<if test=" fid != null">
+			WHERE sfb.fid=#{fid}
+		</if>
+		<if test=" searchKey != null ">
+			sfb.content LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+		</if>
+	</select>
+	<!--根据ID查询用户最新未读消息-->
+	<select id="selectRecentNotReadFeedbackById" resultMap="multiResultMap">
+		SELECT sf.id,sf.create_date, sf.fid,sf.`from`,sf.content,sf.img_addr,sf.read_date FROM shop_feedback sf
+		WHERE create_date=(SELECT MAX(s.create_date ) create_date FROM shop_feedback s WHERE s.fid=#{feedbackId} AND s.`from`>=1)
+	</select>
+
+	<!--根据主题查看主题下的所有信息-->
+	<select id="selectShopFeedbackMessageList" resultMap="BaseResultMap">
+		SELECT sf.id,sf.content,sf.create_date,sf.`from`,sf.id,sf.img_addr FROM shop_feedback sf  WHERE sf.fid=#{feedbackId}  ORDER BY create_date
+	</select>
+	<!--SELECT sfb.id ,sfb.fid,z.service_read_date,sfb.create_date,sfb.`from`,sfb.img_addr, su.id,su.nickname
+	FROM shop_feedback sfb LEFT JOIN shop_user su ON sfb.`from`=su.id
+	LEFT JOIN ( SELECT sf.id, MAX(sf.create_date) cd ,sf.service_read_date FROM shop_feedback sf WHERE sf.fid=0 ) z ON sfb.id=z.id
+	WHERE sfb.fid=0 -->
+</mapper>

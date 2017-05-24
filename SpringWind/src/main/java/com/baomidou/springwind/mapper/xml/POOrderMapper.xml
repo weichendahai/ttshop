@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.POOrderMapper">
+
+	<!-- 通用查询映射结果 -->
+
+	<resultMap id="poordermap" type="com.baomidou.springwind.entity.po.POOrder">
+		<id property="id" column="id" />
+		<result property="orderCode" column="order_code" />
+		<result property="orderState" column="order_state" />
+		<result property="expressCode" column="express_code" />
+		<result property="orderTotal" column="order_total" />
+		<result property="freight" column="freight" />
+		<result property="createDate" column="create_date" />
+		<result property="modifyDate" column="modify_date" />
+		<association property="shopUserAddr" javaType="com.baomidou.springwind.entity.ShopUserAddr" >
+			<id property="id" column="id" />
+			<result property="userId" column="user_id" />
+			<result property="contact" column="contact" />
+			<result property="address" column="address" />
+			<result property="mobilePhone" column="mobile_phone" />
+		</association>
+		<association property="shopUserPromo" javaType="com.baomidou.springwind.entity.ShopUserPromo" >
+			<id property="id" column="id" />
+			<result property="userId" column="user_id"/>
+			<result property="promoId" column="promo_id"/>
+			<result property="grantDate" column="grant_date"/>
+			<result property="promoType" column="promo_type"/>
+			<result property="state" column="state"/>
+			<result property="endDate" column="end_date"/>
+		</association>
+		<!--<collection property="list" ofType="com.baomidou.springwind.entity.ShopOrderItem" >
+			<id property="id"  column="id" ></id>
+			<result  property="orderId" column="order_id" />
+			<result  property="itemId" column="item_id" />
+			<result  property="propertyKey" column="property_key" />
+			<result  property="propertyValue" column="property_value" />
+			<result  property="price" column="price" />
+			<result  property="count" column="count" />
+		</collection>-->
+
+	</resultMap>
+	<select id="selectPOOrderList"  resultMap="poordermap" >
+	SELECT
+	o.id,o.order_code,sua.contact,o.order_code,o.order_state,o.order_total,sua.address,o.freight,sup.promo_type,o.create_date,o.modify_date
+	FROM
+		`shop_order` o
+	LEFT JOIN `user` u ON o.user_id = u.id
+	LEFT JOIN shop_user_addr sua ON u.id = sua.user_id
+	LEFT JOIN shop_user_promo sup ON sua.user_id = sup.user_id
+	LEFT JOIN shop_order_item soi ON o.id = soi.order_id
+	</select>
+	
+</mapper>

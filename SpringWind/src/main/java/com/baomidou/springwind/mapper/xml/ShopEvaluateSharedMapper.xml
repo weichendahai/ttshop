@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopEvaluateSharedMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopEvaluateShared">
+		<id column="id" property="id" />
+		<result column="evaluate_id" property="evaluateId" />
+		<result column="user_id" property="userId" />
+		<result column="create_date" property="createDate" />
+	</resultMap>
+
+	<resultMap id="multiResultMapList" type="com.baomidou.springwind.entity.po.PoShopEvaluateShared">
+		<id column="id" property="id" />
+		<result column="evaluate_id" property="evaluateId" />
+		<result column="user_id" property="userId" />
+		<result column="create_date" property="createDate" />
+		<!--<association property="shopItemEvaluate" javaType="ShopItemEvaluate" >
+			<id column="id" property="id" />
+			<result column="user_id" property="userId" />
+			<result column="item_id" property="itemId" />
+			<result column="advantage" property="advantage" />
+			<result column="disadvantage" property="disadvantage" />
+			<result column="evaluate_image_addr" property="evaluateImageAddr" />
+			<result column="evaluate_vedio_addr" property="evaluateVedioAddr" />
+			<result column="other_item_ids" property="otherItemIds" />
+			<result column="grade" property="grade" />
+			<result column="create_date" property="createDate" />
+		</association>-->
+		<association property="shopItem" javaType="ShopItem" >
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+		</association>
+		<association property="shopUser"  javaType="ShopUser">
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+			<result column="head_image_addr" property="headImageAddr" />
+			<result column="mobile_phone" property="mobilePhone" />
+			<result column="date_of_birth" property="dateOfBirth" />
+			<result column="skin_type" property="skinType" />
+			<result column="email" property="email" />
+			<result column="default_addr" property="defaultAddr" />
+			<result column="shard_count" property="shardCount" />
+			<result column="evaluate_count" property="evaluateCount" />
+			<result column="shard_bonus" property="shardBonus" />
+			<result column="evaluate_bonus" property="evaluateBonus" />
+			<result column="open_id" property="openId" />
+			<result column="union_id" property="unionId" />
+			<result column="state" property="state" />
+		</association>
+	</resultMap>
+
+	<!--根据user_id获取-->
+	<select id="getInfoByUserId" resultMap="BaseResultMap">
+     SELECT * FROM shop_evaluate_shared s
+	 WHERE s.user_id=#{user_id}
+	 ORDER BY create_date DESC
+	 limit #{page_no},10
+	</select>
+	<!--根据点评id获取分享条数-->
+	<select id="getCountShared" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM shop_evaluate_shared
+		WHERE evaluate_id=#{id}
+	</select>
+
+	<!--查询分享列表-->
+	<select id="selectMultiShopEvaluateSharedList" resultMap="multiResultMapList">
+		SELECT ses.id,ses.create_date,su.nickname,si.item_name
+		FROM shop_evaluate_shared ses LEFT JOIN shop_item_evaluate sie ON ses.evaluate_id=sie.id
+		LEFT JOIN shop_user su ON sie.user_id=su.id
+		LEFT JOIN shop_item si ON sie.item_id=si.id
+		<if test="evaluateSharedId != null">
+		WHERE ses.id=#{evaluateSharedId}
+		</if>
+		<if test=" searchKey != null">
+			WHERE 	si.item_name LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+		</if>
+		order BY ses.create_date DESC
+		<if test=" _index != null and _size != null">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+
+	<!--查询分享列表的数量-->
+	<select id="selectMultiShopEvaluateSharedCount" resultType="int">
+		SELECT COUNT(ses.id) cnt
+		FROM shop_evaluate_shared ses LEFT JOIN shop_item_evaluate sie ON ses.evaluate_id=sie.id
+		LEFT JOIN shop_user su ON sie.user_id=su.id
+		LEFT JOIN shop_item si ON sie.item_id=si.id
+		<if test=" searchKey != null">
+		 WHERE 	si.item_name LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+		</if>
+	</select>
+
+	<!--<select id="selectMultiShopEvaluateShared" resultMap="multiResultMapList" >
+		SELECT seh.id,seh.create_date,si.item_name,sie.advantage,sie.disadvantage,su.nickname
+		FROM shop_evaluate_shared seh
+		LEFT JOIN shop_item_evaluate sie on seh.evaluate_id=sie.id
+		LEFT JOIN shop_user su on seh.user_id=su.id
+		LEFT JOIN shop_item si on sie.item_id=si.id
+		WHERE si.item_name LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+		ORDER  BY seh.create_date DESC
+		LIMIT #{_index},#{_size}
+	</select>-->
+	<!--<select id="selectMultiShopEvaluateSharedCount" resultType="int" >
+		SELECT count(seh.id) cnt
+		FROM shop_evaluate_shared seh
+		LEFT JOIN shop_item_evaluate sie on seh.evaluate_id=sie.id
+		LEFT JOIN shop_user su on seh.user_id=su.id
+		LEFT JOIN shop_item si on sie.item_id=si.id
+		WHERE si.item_name LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+	</select>-->
+</mapper>

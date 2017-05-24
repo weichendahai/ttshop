@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopItemPropertiesMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopItemProperties">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="property_desc" property="propertyDesc" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopItemProperties">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="property_key" property="propertyKey" />
+		<result column="property_value" property="propertyValue" />
+		<result column="property_desc" property="propertyDesc" />
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+		</association>
+	</resultMap>
+
+	<sql id="select_multi_where">
+		<if test=" itemId != null ">
+			sip.item_id=#{itemId}
+		</if>
+		<if test=" searchKey != null ">
+			si.item_name LIKE '%${searchKey}%' OR sip.property_desc LIKE '%${searchKey}%'
+		</if>
+	</sql>
+
+	<select id="selectMultiShopItemPropertyList" resultMap="multiResultMap" >
+		SELECT sip.id,si.id,si.item_name,sip.property_key,sip.property_value,sip.property_desc
+		FROM shop_item_properties sip LEFT JOIN shop_item si ON sip.item_id=si.id
+		<where>
+			<include refid="select_multi_where"></include>
+		</where>
+		LIMIT #{_index},#{_size}
+	</select>
+
+	<select id="selectMultiShopItemPropertyCount" resultType="int" >
+		SELECT count(sip.id) cnt
+		FROM shop_item_properties sip LEFT JOIN shop_item si ON sip.item_id=si.id
+		<where>
+			<include refid="select_multi_where"></include>
+		</where>
+	</select>
+
+	<select id="selectByKey" resultMap="BaseResultMap">
+		SELECT * FROM  shop_item_properties p
+		WHERE p.item_id=#{item_id} AND p.property_key=#{property_key} AND p.property_value=#{property_value}
+	</select>
+	<!--g根据itemid获取propertykey-->
+	<select id="selecetListByItemId" resultType="java.lang.String">
+		SELECT  DISTINCT property_key FROM shop_item_properties
+		WHERE item_id=#{item_id}
+	</select>
+	<!--根据key获得values-->
+	<select id="selecetValueByItemId" resultMap="BaseResultMap">
+    SELECT * FROM shop_item_properties
+    WHERE item_id=#{item_id}
+    AND   property_key=#{key}
+	</select>
+</mapper>

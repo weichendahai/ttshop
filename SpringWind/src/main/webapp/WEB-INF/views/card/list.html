@@ -1,0 +1,136 @@
+#override("title")
+SpringWind - 运营管理
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>运营管理</a></li><li class="active"><strong>红包管理</strong></li>
+#end
+
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/operate/card/getShopGiftCardList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'balance',
+        title: '红包金额',
+        formatter: function (value, row, index) {
+            return showPoint(value);
+        }
+    }, {
+        field: 'createDate',
+        title: '生成日期',
+        formatter: function (value, row, index) {
+            return formatDate(value);
+        }
+    }, {
+        field: 'name',
+        title: '名称'
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="sendCard(' + "'" + id + "'" + ')"><i class="fa fa-pencil">派发</i></a>';
+        }
+    }
+    ];
+    function dataQueryParams(params) {
+        return {
+            _size: params.limit,  //页面大小
+            _index: params.offset //页码
+        }
+    }
+
+    /*function changeStateItem(itemId,type) {
+        //询问框
+        var state;
+        if(type==1){
+            state=='上架';
+        }
+        if(type==0){
+            state='下架';
+        }
+        layer.confirm('确定'+state+'吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/item/changeStateItem')" + itemId,
+                datatype: "text",
+                success: function (data) {
+                    if(data == 'true'){
+                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+                    }
+                    layer.closeAll();
+                }
+            });
+        }, function () {
+            return;
+        });
+    }*/
+
+    function addGiftCard(itemId){
+        var title = "新增红包";
+            url="#springUrl('/operate/card/add.html')";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['700px', '600px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function showPoint(num){
+        var result =0;
+        result = num/100;
+        return result+".00";
+    }
+
+</script>
+#end
+#override("content")
+<div class="row">
+    <div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+        <div class="input-group">
+            <span class="input-group-btn">
+				<!--<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()" >
+
+                    <option  selected="selected">排序</option>
+                    <option value="dateOfBirth" >生日</option>
+                    <option value="skinType" >肤质</option>
+                    <option value="shardCount" >分享数量</option>
+                    <option value="shardBonus" >分享佣金</option>
+                    <option value="evaluateCount" >点评数量</option>
+                    <option value="evaluateBonus" >点评佣金</option>
+                    <option value="state" >状态</option>
+                </select>-->
+			</span>
+            <input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>
+        </div>
+        <button class="btn btn-primary" onclick="addGiftCard(null)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加红包</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#extends("/common/framework.html")

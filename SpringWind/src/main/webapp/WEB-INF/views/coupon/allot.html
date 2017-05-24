@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 430px;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+       <div class="form-group"><label class="col-sm-2 control-label">选择筛选方案</label>
+           <div class="col-sm-10">
+               <select name="scheme" class="form-control" id="scheme">
+                   #foreach($sc in $!{schemes})
+                   #if($!{sc.id}>1)
+                   <option value="$!{sc.id}" #if($!{sc.id}==10) selected="selected" #end >$!{sc.name}</option>
+                   #end
+                   #end
+               </select>
+               #foreach($sc in $!{schemes})
+               #if($!{sc.id}>1)
+                <input type="hidden"  id="schemeDesc_$!{sc.id}"  value = " $!{sc.description}"/>
+               #end
+               #end
+               <div id="schemeDesc" style="margin: 10px;" >!{defaultDesc}</div>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">参数x</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" value="" name="x"  id="x" data-rule="integer[+]"/>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">参数y</label>
+           <div class="col-sm-10">
+               <input type="hidden" id="userIds" name="userIds" value="" class="form-control" >
+               <input type="hidden" id="promoId" name="promoId" value="" class="form-control" >
+               <input type="text" class="form-control" value="" name="y"  id="y" data-rule="integer[+]" />
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">结束时间</label>
+           <div class="col-sm-10">
+               <input type="text"  class="form-control"  name="endDate"  id="endDate"  />
+           </div>
+       </div>
+       <div id="filterResult" style="margin: 10px;" >筛选结果:</div><!--<label id="show" class="control-label"></label>-->
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary" onclick="filterOperate()" type="button">筛选</button>
+                <button class="btn btn-primary" onclick="handleFilterResult()" type="button">处理</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/jquery-ui.custom.min.js')"></script>
+<script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+<script src="#springUrl('/static/js/jquery.ui.datepicker-zh-CN.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+
+<script type="text/javascript">
+    $(function(){
+        $( "#endDate" ).datepicker();
+    });
+    $("#schemeDesc").html("");
+    $("#scheme").change(function(){
+        var id = $("#scheme").val()
+        var desc = $("#schemeDesc_"+id).val();
+        $("#schemeDesc").html(desc);
+    });
+    var promoId = Request.QueryString("promoId");
+    $("#promoId").val(promoId);
+var RegEx = /^[0-9]*$/;
+    function filterOperate(){
+        var reg = /^[0-9]*$/;
+        var vx = $("#x").val().trim();
+        var vy = $("#y").val().trim();
+        if((reg.test(vx)==true)&&(reg.test(vy)==true||vy=="")) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "#springUrl('/operate/promo/coupon/filter')",
+                        data: $("#myForm").serialize(),
+                        dataType: 'text',
+                        success: function (data) {
+                            var d = JSON.parse(data)
+                            var len = d.length;
+                            $("#filterResult").html("筛选结果:")
+                            $("#filterResult").append(" " + len);
+                            $("#userIds").val(data);
+                        }
+                    });
+        }else{
+            layer.confirm('请输入正确的数字!',{btn:['确定']},function(){layer.closeAll();});
+        }
+    }
+
+    function handleFilterResult(){
+        var val = $("#endDate").val();
+        val = $.trim(val);
+        if(val!="") {
+            var ids = $("#userIds").val();
+            if (ids == "") {
+                return;
+            }
+            if (ids != null) {
+                $.ajax({
+                    type: 'POST',
+                    url: "#springUrl('/operate/promo/coupon/handler')",
+                    data: $("#myForm").serialize(),
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data == true) {
+                            layer.confirm('处理成功!!', {btn: ['确定']}, function () {
+                                layer.closeAll();
+                                window.parent.location.reload();
+                            });
+                        } else {
+                            return;
+                        }
+                    }
+                });
+            } else {
+                return;
+            }
+        }else{
+            layer.confirm('结束时间不能为空!',{btn:['确定']},function(){layer.closeAll();});
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopCouponConditionMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopCouponCondition">
+		<id column="id" property="id" />
+		<result column="condition_type" property="conditionType" />
+		<result column="condition_desc" property="conditionDesc" />
+		<result column="parameter_first" property="parameterFirst" />
+		<result column="parameter_second" property="parameterSecond" />
+		<result column="coupon_id" property="couponId" />
+	</resultMap>
+<!--根据用户id查出所有的优惠券信息-->
+	<select id="selectByUserId" resultMap="BaseResultMap">
+		SELECT  * FROM  shop_coupon_condition
+		WHERE coupon_id=#{coupon_id}
+	</select>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopCouponCondition">
+		<id column="id" property="id" />
+		<result column="condition_type" property="conditionType" />
+		<result column="condition_desc" property="conditionDesc" />
+		<result column="parameter_first" property="parameterFirst" />
+		<result column="parameter_second" property="parameterSecond" />
+		<result column="coupon_id" property="couponId" />
+		<association property="shopCoupon" javaType="ShopCoupon">
+			<id column="id" property="id" />
+			<result column="name" property="name" />
+			<result column="create_date" property="createDate" />
+		</association>
+	</resultMap>
+
+	<!--查询优惠券列表信息-->
+	<select id="selectMultiShopCouponList" resultMap="multiResultMap">
+		SELECT scc.condition_desc,scc.parameter_first,scc.parameter_second,scc.condition_type,scc.id,sc.create_date,sc.`name`,sc.id
+		FROM shop_coupon_condition scc LEFT JOIN shop_coupon sc ON scc.coupon_id= sc.id
+		<if test="couponConditionId">
+			WHERE scc.id=#{couponConditionId}
+		</if>
+		<if test=" searchKey != null">
+			WHERE sc.`name` LIKE '%${searchKey}%'
+		</if>
+		<if test=" _index != null and _size != null">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+
+	<!--查询优惠券总数-->
+	<select id="selectMultiShopCouponCount" resultType="int">
+		SELECT COUNT(scc.id) cnt
+		FROM shop_coupon_condition scc LEFT JOIN shop_coupon sc ON scc.coupon_id= sc.id
+		<if test="couponConditionId">
+			WHERE scc.id=#{couponConditionId}
+		</if>
+		<if test=" searchKey != null">
+			WHERE sc.`name` LIKE '%${searchKey}%'
+		</if>
+	</select>
+
+</mapper>

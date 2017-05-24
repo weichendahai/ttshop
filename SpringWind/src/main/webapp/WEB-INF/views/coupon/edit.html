@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 430px;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+       <div class="form-group"><label class="col-sm-2 control-label">名称</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" name="shopCoupon.name"  />
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">类型</label>
+      		<div class="col-sm-10">
+                <select class=" form-control" name="conditionType">
+                    <option value="0">订单金额满x金额减y</option>
+                </select>
+      		</div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">参数x(单位/分)</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" name="parameterFirst" data-rule="integer[+]" />
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">参数y(单位/分)</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control"  name="parameterSecond" data-rule="integer[+]" />
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-2 control-label">描述</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control"  name="conditionDesc"  />
+           </div>
+       </div>
+       <!--<div class="form-group"><label class="col-sm-2 control-label">试用商品图片</label>
+           <div class="col-sm-10">
+               <input type="file" class="form-control"  id="picture" accept=".gif,.jpg,.jpeg,.png"  >
+               <input type="hidden" class="form-control" id="sampleImageAddr" name="sampleImageAddr"  >
+           </div>
+           <div class="col-sm-10">
+               <input id="sampleImage" type="file" style="display:none"/>
+               <input name="sampleImageAddr" type="hidden" value="$!{sample.sampleImageAddr}"/>
+               <a id="sampleImageView">$!{sample.sampleImageAddr}</a>
+               <br/>
+               <a class="btn" onclick="$('#sampleImage').click();">选择图片文件</a>
+               <a class="btn" onclick="removeImage('sampleImageView','sampleImageAddr')">清空</a>
+           </div>
+       </div>-->
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary" type="submit">#if($!{sample})修 改#else提 交#end</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/jquery-ui.custom.min.js')"></script>
+<script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+<script src="#springUrl('/static/js/itemSelect.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+
+<script type="text/javascript">
+$("#myForm").validator({
+    valid: function(form){
+        var me = this;
+        // 提交表单之前，hold住表单，防止重复提交
+
+        me.holdSubmit();
+        $.ajax({
+        	url: "#springUrl('/operate/coupon/condition/addShopCouponCondition')",
+            data: $(form).serialize(),
+            type: "POST",
+            success: function(data){
+            	var d = JSON.parse(data);
+                if(d.success && d.data){
+                	window.parent.location.reload();
+                	//当你在iframe页面关闭自身时
+                	//var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                	//parent.layer.close(index); //再执行关闭   
+                } else {
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                    me.holdSubmit(false);
+                }
+            }
+        });
+    }
+});
+
+</script>
+</body>
+</html>

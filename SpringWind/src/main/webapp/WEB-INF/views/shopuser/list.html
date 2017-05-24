@@ -1,0 +1,239 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>前台用户管理</a></li><li class="active"><strong>前台用户管理</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+
+            <span class="input-group-btn">
+				<!--<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()">
+
+                    <option  selected="selected">排序</option>
+                    <option value="dateOfBirth" >生日</option>
+                    <option value="skinType" >肤质</option>
+                    <option value="shardCount" >分享数量</option>
+                    <option value="shardBonus" >分享佣金</option>
+                    <option value="evaluateCount" >点评数量</option>
+                    <option value="evaluateBonus" >点评佣金</option>
+                    <option value="state" >状态</option>
+                </select>-->
+			</span>
+            <input type="text" class="form-control" name="searchKey" id="searchKey" >
+			<span class="input-group-btn">
+				<button type="button" onclick="search()" class="btn btn-info">查找</button>
+			</span>
+		</div>
+		<!--<button class="btn btn-primary" onclick="addShopUser(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加商品用户</button>-->
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/shopuser/getShopUserList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+
+    }, {
+        field: 'nickname',
+        title: '昵称'
+    }, {
+        field: 'sex',
+        title: '性别',
+        formatter:function(value,row,index){
+            return sex(value);
+        }
+    },{
+        field: 'headImageAddr',
+        title: '头像',
+        formatter:function(value,row,index){
+            return '<img src="'+value+'" style="display:block;width:40px;height:40px"/>'
+        }
+    }, {
+        field: 'mobilePhone',
+        title: '手机号'
+    }, {
+        field: 'dateOfBirth',
+        title: '出生日期'
+    }, {
+        field: 'skinType',
+        title: '肤质',
+        formatter:function(value,row,index){
+           return skinType(value);
+        }
+    }, {
+        field: 'shopUserAddr.address',
+        title: '默认地址'
+    },{
+        field: 'shardCount',
+        title: '分享数量'
+    },{
+        field: 'evaluateCount',
+        title: '点评数量'
+    },{
+        field: 'shardBonus',
+        title: '分享佣金'
+    }, {
+        field: 'evaluateBonus',
+        title: '点评佣金'
+    },{
+        field: 'state',
+        title: '状态',
+        formatter:function(value,row,index){
+            /*0是正常,1不能购买,2不能点评,3没有佣金,4,不能提现*/
+            return showShopUserState(value);
+        }
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="editShopUser(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a>';
+                    <!-- 此处按钮级别权限控制，目前只有 admin 拥有该权限！ -->
+
+                    /*+ '<a class="btn btn-xs btn-danger" onclick="delShopUser(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a>'*/
+        }
+    }
+    ];
+
+    function delShopUser(shopUserId) {
+        //询问框
+        layer.confirm('确定删除吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/shopuser/delShopUser/')"+shopUserId,
+                datatype: "text",
+                success: function (data) {
+                    if(data == 'true'){
+                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+                    }
+                    layer.closeAll();
+                }
+            });
+        }, function () {
+            return;
+        });
+    }
+
+function editShopUser(shopUserId){
+   	var title ;
+   	var url = "#springUrl('/shopuser/edit.html')";
+   	if(shopUserId!=null){
+   		title = "编辑商品用户";
+   		url = url + "?shopUserId=" + shopUserId;
+   	}
+    layer.open({
+        type: 2,
+        title: title,
+        shadeClose: true,
+        shade: 0.8,
+        area: ['600px', '500px'],
+        fix: false,
+        maxmin: true,
+        content: url
+    });
+}
+
+    function addShopUser(shopUserId){
+        var title ;
+        var url = "#springUrl('/shopuser/add.html')";
+        if(shopUserId==null){
+            title = "新增商品用户";
+        }
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '500px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    //搜索输入选择
+    function search(){
+        var search = $.trim( $("#searchKey").val());
+        var key = search.split(" ").join("");
+        if(key!=null){
+            var url = "#springUrl('/shopuser/getShopUserList')"+"?searchKey="+key;
+            $("#dataTable").bootstrapTable('refresh',{url:url});
+        }
+    }
+
+    //下拉列表框选择
+    function changeType(){
+       var sortField = $("#sortSelect").val();
+        if(sortField!="排序"){
+             var url = "#springUrl('/shopuser/getSortShopUserList/')"+sortField;
+                        $("#dataTable").bootstrapTable('refresh',{url:url});
+        }
+    }
+
+    function skinType(num){
+        if(num==0){
+            return "干性";
+        }
+        if(num==1){
+            return "混合";
+        }
+        if(num==2){
+            return "油性";
+        }
+        if(num==3){
+            return "中性";
+        }
+        if(num==4){
+            return "敏感";
+        }
+    }
+
+    function sex(num){
+        if(num==1){
+            return "女";
+        }
+        if(num==0){
+            return "男";
+        }
+    }
+    function showShopUserState(num){
+        if(num==0){
+            return "正常"
+        }
+        if(num==1){
+            return "不能购买"
+        }
+        if(num==2){
+            return "不能点评"
+        }
+        if(num==3){
+            return "没有佣金"
+        }
+        if(num==4){
+            return "不能提现"
+        }
+    }
+</script>
+#end
+#extends("/common/framework.html")

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopUserPromoMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopUserPromo">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="promo_id" property="promoId" />
+		<result column="grant_date" property="grantDate" />
+		<result column="promo_type" property="promoType" />
+		<result column="state" property="state" />
+		<result column="end_date" property="endDate" />
+		<result column="modify_date" property="modifyDate" />
+	</resultMap>
+	<!--获取ShopUserPromo-->
+	<select id="getShopUserPromo"  resultMap="BaseResultMap">
+		SELECT *  FROM shop_user_promo
+		WHERE user_id=#{user_id}
+		AND state = #{state}
+		limit #{page_no},10
+	</select>
+	<!--区分红包和优惠券-->
+	<select id="getShopUserPromoByType"  resultMap="BaseResultMap">
+	 SELECT *  FROM shop_user_promo p
+	 WHERE p.user_id=#{user_id}
+	AND p.state=#{state}
+	AND p.promo_type=#{promo_type}
+	AND  p.end_date is not NULL
+	</select >
+	<select id="getShopUserPromoByT"  resultMap="BaseResultMap">
+		SELECT *  FROM shop_user_promo p
+		WHERE p.user_id=#{user_id}
+		AND p.state=#{state}
+		AND p.promo_type=#{promo_type}
+		AND  p.end_date is not NULL
+		limit #{page_no},10
+	</select >
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopUserPromo">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="promo_id" property="promoId" />
+		<result column="grant_date" property="grantDate" />
+		<result column="promo_type" property="promoType" />
+		<result column="state" property="state" />
+		<result column="end_date" property="endDate" />
+		<result column="modify_date" property="modifyDate" />
+		<association property="shopUser" javaType="ShopUser" >
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+			<result column="head_image_addr" property="headImageAddr" />
+			<result column="mobile_phone" property="mobilePhone" />
+			<result column="date_of_birth" property="dateOfBirth" />
+			<result column="skin_type" property="skinType" />
+			<result column="email" property="email" />
+			<result column="default_addr" property="defaultAddr" />
+			<result column="shard_count" property="shardCount" />
+			<result column="evaluate_count" property="evaluateCount" />
+			<result column="shard_bonus" property="shardBonus" />
+			<result column="evaluate_bonus" property="evaluateBonus" />
+			<result column="open_id" property="openId" />
+			<result column="union_id" property="unionId" />
+			<result column="state" property="state" />
+		</association>
+	</resultMap>
+
+	<select id="selectMulitShopUserPromoList" parameterType="int" resultMap="multiResultMap">
+		SELECT sup.id,su.nickname,sup.grant_date,sup.promo_type,sup.state,sup.end_date
+		FROM shop_user_promo sup LEFT JOIN shop_user su on sup.user_id=su.id
+		<if test="_index != null and _size !=null ">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+
+	<select id="selectMulitShopUserPromoListTotal"  resultType="int">
+		SELECT count(sup.id) cnt
+		FROM shop_user_promo sup LEFT JOIN shop_user su on sup.user_id=su.id
+	</select>
+
+</mapper>

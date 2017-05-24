@@ -1,0 +1,189 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>运营管理</a></li><li class="active"><strong>试用管理</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+            <span class="input-group-btn">
+
+           <!-- <button class="btn btn-primary" onclick="updateShopHotItem()" type="button" ><i class="fa fa-rotate-left"></i>&nbsp;最新爆款商品</button>-->
+				<!--<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()" >
+
+                    <option  selected="selected">排序</option>
+                    <option value="dateOfBirth" >点评数量</option>
+                    <option value="skinType" >评分</option>
+                    <option value="shardCount" >价格</option>
+                </select>-->
+			</span>
+			<!--<input type="text" id="searchKey"  class="form-control">
+			<span class="input-group-btn">
+				<button type="button" onclick="searchSample()" class="btn btn-info">搜索</button>
+			</span>-->
+		</div>
+		<button class="btn btn-primary" onclick="editShopSample(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;新增试用</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    var dataUrl = "#springUrl('/operate/sample/getShopSampleList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    },{
+        field: 'shopItem.itemName',
+        title: '商品名称'
+
+    }, {
+        field: 'createDate',
+        title: '申请日期',
+        formatter:function(value,row,index){
+            return formatDateSimple(value);
+        }
+    },{
+
+        field: 'startDate',
+        title: '开始日期',
+        formatter:function(value,row,index){
+            return formatDateSimple(value);
+        }
+    }, {
+        field: 'endDate',
+        title: '结束日期',
+        formatter:function(value,row,index){
+            return formatDateSimple(value);
+        }
+    }, {
+        field: 'applyCount',
+        title: '申请数量'
+    }, {
+        field: 'itemCount',
+        title: '试用数量'
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="editShopSample('+id+')"><i class="fa fa-pencil"></i>编辑</a>'
+                    + ' <a class="btn btn-xs btn-info" onclick="operApply(' + id + "," +row.state+ ')"><i class="fa fa-check"></i>申请处理</a>'
+        }
+    }
+    ];
+
+   /* function editKeyword(searchId){
+        var url = "#springUrl('/operate/search/edit.html')"+"?searchId="+searchId;
+        var title = "编辑搜索关键词";
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['500px', '400px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }*/
+
+    function editShopSample(samId){
+         var   url = "#springUrl('/operate/sample/edit.html')";
+           var  title = "添加试用活动";
+        if(samId!=null){
+            url = "#springUrl('/operate/sample/edit.html')"+"?sampleId="+samId;
+            title = "编辑试用活动";
+        }
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: false,
+            shade: 0.8,
+            area: ['600px', '500px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    /*function delKeyword(searchId){
+        layer.confirm('确定删除吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/operate/search/delKeyword')" +"?searchId="+searchId,
+                datatype: "text",
+                success: function (data) {
+                    var d = JSON.parse(data);
+                    if(d.success && d.data){
+                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+                    }
+                    layer.closeAll();
+                }
+            });
+        }, function () {
+            return;
+        });
+    }*/
+    function searchShared(){
+        var val = $.trim( $("#searchKey").val());
+        var str = val.split(" ").join("");
+        if(str==''){
+            return;
+        }
+        var url = "#springUrl('/operate/shared/getShopEvaluateSharedList')"+"?searchKey="+str;
+        $("#dataTable").bootstrapTable("refresh",{url:url});
+    }
+
+    //处理申请用户
+    function operApply(samId,state){
+state+=2;
+        if (state == 0){
+            layer.msg('还没开始申请的试用活动，无需处理');
+            return;
+        }
+        if (state == 1){
+            layer.msg('试用活动还在申请中，不能处理');
+            return;
+        }
+        if (state == 2){
+            layer.open({
+                type: 2,
+                title: "处理申请的用户",
+                shadeClose: false,
+                shade: 0.8,
+                area: ['600px', '500px'],
+                fix: false,
+                maxmin: true,
+                content: "#springUrl('/operate/sample/operApply.html')"+"?sampleId="+samId
+            });
+            return;
+        }
+
+        if(state == 3){
+
+        }
+
+    }
+
+
+</script>
+#end
+#extends("/common/framework.html")

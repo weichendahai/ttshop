@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopBonusPaymentMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap2" type="com.baomidou.springwind.entity.ShopBonusPayment">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="total" property="total" />
+		<result column="create_date" property="createDate" />
+		<result column="state" property="state" />
+		<result column="payment_date" property="paymentDate" />
+	</resultMap>
+
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopBonusPayment">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="total" property="total" />
+		<result column="create_date" property="createDate" />
+		<result column="state" property="state" />
+		<result column="payment_date" property="paymentDate" />
+		<association property="shopUser" javaType="ShopUser">
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+		</association>
+	</resultMap>
+	<!--根据用户id获取ShopBonusPayment-->
+	<select id="selectByUserId"  resultMap="BaseResultMap2">
+		SELECT  *  FROM shop_bonus_payment p
+		where p.user_id=#{user_id}
+		limit #{page_no},10
+	</select>
+
+	<select id="selectMultiBonusPaymentList" resultMap="multiResultMap">
+		SELECT sbp.create_date,sbp.id,sbp.payment_date,sbp.state,sbp.total,su.nickname FROM shop_bonus_payment sbp LEFT JOIN shop_user su ON sbp.user_id=su.id
+		<if test=" bonusId != null">
+			WHERE sbp.id=#{bonusId}
+		</if>
+		<if test=" searchKey != null">
+			WHERE su.nickname LIKE #{searchKey}
+		</if>
+		order BY sbp.state ASC
+		<if test=" _index != null and _size != null">
+			limit #{_index},#{_size}
+		</if>
+	</select>
+
+	<select id="selectMultiBonusPaymentCount" resultType="int">
+		SELECT COUNT(sbp.id) cnt FROM shop_bonus_payment sbp LEFT JOIN shop_user su ON sbp.user_id=su.id
+		<if test=" bonusId != null">
+			WHERE sbp.id=#{bonusId}
+		</if>
+		<if test=" searchKey != null">
+			WHERE su.nickname LIKE #{searchKey}
+		</if>
+	</select>
+
+	<insert id="insertBonusPayment"  parameterType="com.baomidou.springwind.entity.ShopBonusPayment" >
+	INSERT INTO
+	shop_bonus_payment
+	(user_id,total,create_date,state,payment_date)
+	 VALUES
+	 (#{bp.userId},#{bp.total},#{bp.createDate},#{bp.state},#{bp.paymentDate})
+		<selectKey resultType="Integer" order="AFTER" keyProperty="bp.id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+</mapper>

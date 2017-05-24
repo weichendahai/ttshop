@@ -1,0 +1,181 @@
+#override("title")
+CiaoTalking - 管理系统
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>订单管理</a></li><li class="active"><strong>订单列表</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+            <span class="input-group-btn">
+				<select class="form-control m-b" name="filterSelect" id="filterSelect" onchange="filterState()" >
+                    <option  selected="selected" value="-1">全部</option>
+                    <option value="0" >待付款</option>
+                    <option value="1" >待发货</option>
+                    <option value="2" >待收货</option>
+                    <option value="3" >已完成</option>
+                    <option value="4" >已取消</option>
+                </select>
+			</span>
+            <span class="input-group-btn">
+				<select class="form-control m-b" name="sortSelect" id="sortSelect" onchange="changeType()" >
+                    <option  selected="selected" value="''">排序</option>
+                    <option value="createDate" >下单时间</option>
+                    <option value="modifyDate" >修改时间</option>
+                    <option value="orderTotal" >订单金额</option>
+                    <option value="orderState" >订单状态</option>
+                </select>
+			</span>
+			<input type="text" class="form-control" id="searchKey">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info" onclick="searchOrder()" >搜索</button>
+			</span>
+            <span class="input-group-btn">
+				<button type="button" class="btn btn-info" onclick="exportOrder()" >导出</button>
+			</span>
+		</div>
+		<!--<button class="btn btn-primary" onclick="editItem(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加商品</button>-->
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+<iframe src="" style="display: none" id="exportIframe"></iframe>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+
+    var dataUrl = "#springUrl('/order/getShopOrderList.html')";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号'
+    }, {
+        field: 'orderCode',
+        title: '订单编号'
+    }, {
+        field: 'shopUser.nickname',
+        title: '用户'
+    },{
+        field: 'orderState',
+        title: '状态',
+        formatter:function(value,row,index){
+            return showOrderState(value);
+        }
+    }, {
+        field: 'expressCode',
+        title: '快递编号'
+    }, {
+        field: 'freight',
+        title: '运费',
+        formatter:function(value,row,index){
+            orderFreight = (value/100).toFixed(2);
+            return orderFreight;
+        }
+    },{
+        field: 'orderTotal',
+        title: '订单金额（单位/元）',
+        formatter:function(value,row,index){
+            totalString  =  (value/100).toFixed(2);
+            return totalString;
+        }
+    },{
+        field: 'createDate',
+        title: '下单时间',
+        formatter: function (value, row, index){
+            dateString = formatDate(value);
+            return dateString;
+        }
+    },{
+        field: 'modifyDate',
+        title: '修改时间',
+        formatter: function (value, row, index){
+            return formatDate(value);
+        }
+    },{
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="showOrderDetail(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>订单详情</a> ';
+        }
+    }
+    ];
+
+
+
+    //返回订单状态
+    var orderFreight;
+    var dateString;
+    var totalString;
+    function showOrderDetail(orderId){
+        var title = "订单详情";
+        var url;
+        if(orderId!=null){
+            url = "#springUrl('/order/orderitemproperties/orderitem.html')?orderId=" + orderId+
+            "&totalString="+totalString+"&dateString="+dateString+"&orderFreight="+orderFreight;
+        }
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['1000px', '500px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function showPoint(num){
+        var result =0;
+            result = num/100;
+            return result+".00";
+    }
+
+    function changeType(){
+        var search = $.trim( $("#searchKey").val());
+        var str = search.split(" ").join("");
+            var val  = $("#sortSelect").val();
+            var url = "#springUrl('/order/getShopOrderList')"+"?sortField="+val+"&searchKey="+str;
+            $("#dataTable").bootstrapTable("refresh",{url:url});
+    }
+
+    function searchOrder(){
+        var search = $.trim( $("#searchKey").val());
+        var str = search.split(" ").join("");
+        var val  = $("#sortSelect").val();
+        var url = "#springUrl('/order/getShopOrderList')"+"?sortField="+val+"&searchKey="+str;
+        $("#dataTable").bootstrapTable("refresh",{url:url});
+}
+
+    function filterState(){
+        var search = $.trim( $("#searchKey").val());
+        var str = search.split(" ").join("");
+        var val  = $("#filterSelect").val();
+        var url = "#springUrl('/order/getShopOrderFilterList')"+"?filterState="+val+"&searchKey="+str;
+        $("#dataTable").bootstrapTable("refresh",{url:url});
+    }
+
+    function exportOrder(){
+        var search = $.trim( $("#searchKey").val());
+        var str = search.split(" ").join("");
+        var val  = $("#filterSelect").val();
+        var url = "#springUrl('/order/orderExport')"+"?filterState="+val+"&searchKey="+str;
+        document.getElementById("exportIframe").src=url;
+    }
+
+</script>
+#end
+#extends("/common/framework.html")

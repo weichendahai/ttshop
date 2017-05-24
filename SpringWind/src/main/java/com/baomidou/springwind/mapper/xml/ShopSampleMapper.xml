@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopSampleMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopSample">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="create_date" property="createDate" />
+		<result column="start_date" property="startDate" />
+		<result column="end_date" property="endDate" />
+		<result column="apply_count" property="applyCount" />
+		<result column="item_count" property="itemCount" />
+		<result column="sample_image_addr" property="sampleImageAddr" />
+	</resultMap>
+
+	<resultMap id="MultiResultMap" type="com.baomidou.springwind.entity.po.PoShopSample">
+		<id column="id" property="id" />
+		<result column="item_id" property="itemId" />
+		<result column="state" property="state" />
+		<result column="create_date" property="createDate" />
+		<result column="start_date" property="startDate" />
+		<result column="end_date" property="endDate" />
+		<result column="apply_count" property="applyCount" />
+		<result column="item_count" property="itemCount" />
+		<result column="sample_image_addr" property="sampleImageAddr" />
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+			<result column="item_category_primary" property="itemCategoryPrimary" />
+			<result column="item_category_sub" property="itemCategorySub" />
+		</association>
+		<association property="shopItemCategory" javaType="ShopItemCategory">
+			<id column="id" property="id" />
+			<result column="category_level" property="categoryLevel" />
+			<result column="category_name" property="categoryName" />
+			<result column="pid" property="pid" />
+		</association>
+		<association property="shopManufactor" javaType="ShopManufactor">
+			<id column="id" property="id" />
+			<result column="manufactor" property="manufactor" />
+		</association>
+	</resultMap>
+	<sql id="select_sample_where">
+		<if test=" sampleId != null">
+			sa.id=#{sampleId}
+		</if>
+		<if test=" searchKey != null">
+			si.item_name LIKE '%${searchKey}%'
+		</if>
+	</sql>
+
+	<sql id="select_limit">
+		<if test=" _index !=null and _size != null ">
+			LIMIT #{_index},#{_size}
+		</if>
+	</sql>
+
+	<!--查询要添加的商品名称-->
+	<select id="selectMultiShopSampleItemNameList" resultMap="MultiResultMap">
+		SELECT si.id,si.item_name,sa.id,sa.item_id,sm.manufactor,sic.category_name,sicd.category_name
+		FROM shop_item si LEFT JOIN shop_sample sa on si.id=sa.item_id
+		LEFT JOIN shop_manufactor sm on si.manufactor_id=sm.id
+		LEFT JOIN shop_item_category sic ON si.item_category_primary=sic.id
+		LEFT JOIN shop_item_category sicd ON sic.pid=sicd.id
+		WHERE sa.item_id is NULL
+		<if test=" searchKey != null ">
+		AND si.item_name LIKE '%${searchKey}%' /*OR  sic.category_name LIKE '%${searchKey}%' OR sicd.category_name LIKE '%${searchKey}%'*/
+		</if>
+	</select>
+	<!--查询要添加的商品名称的数量-->
+	<select id="selectMultiShopSampleItemNameCount" resultType="int">
+		SELECT COUNT(si.id) cnt
+		FROM shop_item si LEFT JOIN shop_sample sa on si.id=sa.item_id
+		LEFT JOIN shop_manufactor sm on si.manufactor_id=sm.id
+		LEFT JOIN shop_item_category sic ON si.item_category_primary=sic.id
+		LEFT JOIN shop_item_category sicd ON sic.pid=sicd.id
+		WHERE sa.item_id is NULL
+		<if test=" searchKey != null ">
+			AND si.item_name LIKE '%${searchKey}%' /*OR  sic.category_name LIKE '%${searchKey}%' OR sicd.category_name LIKE '%${searchKey}%'*/
+		</if>
+	</select>
+
+	<select id="selectMultiShopSampleList" resultMap="MultiResultMap" >
+		SELECT sa.id,sa.item_id,si.item_name,sa.create_date,sa.start_date,sa.end_date,sa.apply_count,sa.item_count,sa.sample_image_addr,sa.state
+		FROM shop_sample sa LEFT JOIN shop_item si on sa.item_id=si.id
+		<where>
+			<include refid="select_sample_where"></include>
+		</where>
+		ORDER BY sa.start_date DESC
+		<include refid="select_limit"></include>
+	</select>
+
+	<select id="selectMultiShopSampleCount" resultType="int" >
+		SELECT COUNT(sa.id) cnt
+		FROM shop_sample sa LEFT JOIN shop_item si on sa.item_id=si.id
+		<where>
+			<include refid="select_sample_where"></include>
+		</where>
+	</select>
+
+	<select id="selectItemNameList" resultMap="MultiResultMap">
+		SELECT si.id,si.item_name,sa.id,sa.item_id
+		FROM shop_item si LEFT JOIN shop_sample sa on si.id=sa.item_id
+		WHERE sa.item_id is NULL
+		<include refid="select_limit"></include>
+	</select>
+
+	<!--<select id="selectItemNameCount">
+		SELECT sa.id,sa.item_id,si.id,si.item_name FROM shop_sample sa RIGHT JOIN shop_item si on sa.item_id=si.id
+		WHERE sa.item_id is NULL
+		<include refid="select_limit"></include>
+	</select>-->
+
+	<select id="selectAll"  resultMap="BaseResultMap">
+		SELECT * FROM shop_sample
+		WHERE id NOT IN (SELECT  DISTINCT sample_id FROM shop_user_sample WHERE user_id=#{user_id})
+		limit #{page_no},10
+	</select>
+	<!--订单数大于x的-->
+	<select id="selectAllCount" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM shop_sample
+		WHERE id NOT IN (SELECT  DISTINCT id FROM shop_user_sample WHERE user_id=#{user_id})
+	</select>
+
+</mapper>

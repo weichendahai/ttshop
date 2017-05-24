@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.ShopUserRefundMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.baomidou.springwind.entity.ShopUserRefund">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="item_id" property="itemId" />
+		<result column="create_date" property="createDate" />
+		<result column="reason" property="reason" />
+		<result column="order_id" property="orderId" />
+		<result column="info" property="info" />
+		<result column="image_addr" property="imageAddr" />
+		<result column="refund_state" property="refundState" />
+		<result column="refund_charge" property="refundCharge" />
+		<result column="refund_type" property="refundType" />
+		<result column="order_item_id" property="orderItemId" />
+
+	</resultMap>
+
+	<!-- -->
+	<resultMap id="multiResultMap" type="com.baomidou.springwind.entity.po.PoShopUserRefund">
+		<id column="id" property="id" />
+		<result column="create_date" property="createDate" />
+		<result column="reason" property="reason" />
+		<result column="info" property="info" />
+		<result column="user_id" property="userId" />
+		<result column="item_id" property="itemId" />
+		<result column="order_id" property="orderId" />
+		<result column="image_addr" property="imageAddr" />
+		<result column="refund_state" property="refundState" />
+		<result column="refund_charge" property="refundCharge" />
+		<result column="refund_type" property="refundType" />
+		<result column="order_item_id" property="orderItemId" />
+		<association property="shopItem" javaType="ShopItem">
+			<id column="id" property="id" />
+			<result column="item_name" property="itemName" />
+			<result column="item_icon_addr" property="itemIconAddr" />
+		</association>
+		<association property="shopUser" javaType="ShopUser">
+			<id column="id" property="id" />
+			<result column="nickname" property="nickname" />
+			<result column="sex" property="sex" />
+			<result column="head_image_addr" property="headImageAddr" />
+			<result column="mobile_phone" property="mobilePhone" />
+		</association>
+		<association property="shopOrder" javaType="ShopOrder">
+			<id column="id" property="id" />
+			<result column="order_code" property="orderCode" />
+			<result column="user_id" property="userId" />
+			<result column="order_state" property="orderState" />
+			<result property="expressCode" column="express_code" />
+			<result column="order_total" property="orderTotal" />
+			<result column="order_addr_id" property="orderAddrId" />
+			<result column="freight" property="freight" />
+			<result column="user_coupon_id" property="userCouponId" />
+			<result column="user_gift_card_id" property="userGiftCardId" />
+			<result column="create_date" property="createDate" />
+			<result column="modify_date" property="modifyDate" />
+		</association>
+		<association property="shopOrderItem" javaType="ShopOrderItem">
+			<id  column="id" property="id"></id>
+			<result property="orderId" column="order_id"></result>
+			<result property="itemId" column="item_id"></result>
+			<result property="price" column="price"></result>
+			<result property="count" column="count"></result>
+		</association>
+	</resultMap>
+
+	<sql id="select_multi_refund_where" >
+		<if test=" orderCode != null">
+		 WHERE 	so.order_code=#{orderCode}
+		</if>
+		<if test=" refundId != null">
+			WHERE  sur.id=#{refundId}
+		</if>
+		 <if test=" searchKey != null">
+			WHERE si.item_name LIKE '%${searchKey}%' OR su.nickname LIKE '%${searchKey}%'
+		 </if>
+		ORDER BY sur.refund_state ASC
+	</sql>
+
+	<!--查询退款列表-->
+	<select id="selectMultiShopUserRefundList"  resultMap="multiResultMap">
+		SELECT sur.id,sur.create_date,sur.image_addr,sur.info,sur.item_id,sur.order_id,sur.order_item_id,sur.reason,
+			sur.refund_charge,sur.refund_state,sur.refund_type,sur.user_id,su.nickname,so.express_code,so.order_code,si.item_name
+		FROM shop_user_refund sur LEFT JOIN shop_user su ON sur.user_id=su.id
+		LEFT JOIN shop_order so ON sur.order_id=so.id
+		LEFT JOIN shop_item si ON sur.item_id=si.id
+		<include refid="select_multi_refund_where"></include>
+		<if test=" _index != null and _size != null">
+			LIMIT #{_index},#{_size}
+		</if>
+	</select>
+
+	<!--查询退款列表总数-->
+	<select id="selectMultiShopUserRefundCount"  resultType="int">
+		SELECT COUNT(sur.id) cnt
+		FROM shop_user_refund sur LEFT JOIN shop_user su ON sur.user_id=su.id
+		LEFT JOIN shop_order so ON sur.order_id=so.id
+		LEFT JOIN shop_item si ON sur.item_id=si.id
+		<include refid="select_multi_refund_where"></include>
+	</select>
+
+	<select id="selectPoUserRefundList" resultMap="multiResultMap" >
+		SELECT sur.id,sur.create_date,sur.image_addr,sur.info,sur.refund_charge,sur.refund_state,sur.refund_type,so.order_code,su.nickname
+		from shop_user_refund sur LEFT JOIN shop_user su on sur.user_id=su.id
+		LEFT JOIN shop_order so on su.id=so.user_id
+
+	</select>
+	<sql id="selectPoUserRefundWhere">
+		<if test="id != null and id!= ''"> AND  id=#{id}</if>
+	</sql>
+	<!--获取退款记录列表-->
+	<select id="getreFundList"  resultMap="BaseResultMap">
+		SELECT * FROM shop_user_refund r
+		WHERE r.user_id=#{user_id}
+		limit #{page_no},10
+	</select>
+	<!--快递接口计算状态-->
+	<select id="selectBytype" resultMap="BaseResultMap">
+		SELECT * FROM shop_user_refund
+		WHERE refund_state=0
+		ORDER BY id ASC
+		limit 10
+	</select>
+</mapper>

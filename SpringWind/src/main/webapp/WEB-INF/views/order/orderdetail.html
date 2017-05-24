@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+    <link href="#springUrl('/static/css/jquery-ui.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 100%;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+   	   <!--<input type="hidden" name="id" id="itemId" value="$!{item.id}">-->
+       <div class="form-group"><label class="col-sm-4 control-label">订单编号：</label>
+      		<div class="col-sm-8">
+                    <input type="hidden" value="$!{shopOrder.id}" name="id">
+                <label class=" control-label">$!{shopOrder.orderCode}</label>
+                    <!--<input value="$!{shopOrder.orderCode}" class="col-sm-6 form-control" style="background-color:transparent;outline:none" readonly="true">-->
+                <!--<span value="$!{shopOrder.orderCode}" class="col-sm-6 form-control" style="background-color:transparent">$!{shopOrder.orderCode}</span>-->
+      		</div>
+       </div>
+        <div class="form-group"><label class="col-sm-4 control-label">用户昵称：</label>
+            <div class="col-sm-8">
+                <label class=" control-label">$!{shopUser.nickname}</label>
+            </div>
+        </div>
+       <div class="form-group"><label class="col-sm-4 control-label">联系人：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{shopUserAddr.contact}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">联系电话：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{shopUserAddr.mobilePhone}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">收货地址：</label>
+           <div class="col-sm-8">
+               <label class=" control-label">$!{shopUserAddr.address}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">运费(单位/元)：</label>
+           <div class="col-sm-4">
+               <!--<input name="freight" type="hidden" id="freight">-->
+               <label class=" control-label" id="orderFreight" >$!{freight}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">订单状态：</label>
+           <div class="col-sm-4">
+               #if($!{shopOrder.orderState}==0)
+               <label  class=" control-label">待付款</label>
+               #end
+               #if($!{shopOrder.orderState}==4)
+               <label  class=" control-label">已完成</label>
+               #else
+               <select name="orderState" class="form-control" id="orderState">
+                   <!--<option value="0"  #if($!{shopOrder.orderState}==0) selected="selected" #end >待付款</option>-->
+                   <option value="1"  #if($!{shopOrder.orderState}==1) selected="selected" #end >待发货</option>
+                   <option value="2"  #if($!{shopOrder.orderState}==2) selected="selected" #end >待收货</option>
+                   <option value="3"  #if($!{shopOrder.orderState}==3) selected="selected" #end >待评价</option>
+                   <option value="4"  #if($!{shopOrder.orderState}==4) selected="selected" #end >已完成</option>
+               </select>
+               #end
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">快递编号：</label>
+           <div class="col-sm-4">
+               #if($!{shopOrder.orderState}==4)
+               <label  class=" control-label">$!{shopOrder.expressCode}</label>
+               #else
+               <input class=" form-control" name="expressCode" type="text" value="$!{shopOrder.expressCode}">
+               #end
+           </div>
+       </div>
+
+       <div class="form-group"><label class="col-sm-4 control-label">下单时间：</label>
+           <div class="col-sm-8"><!--商品详情图片--><!--value="$!{shopOrder.createDate}"-->
+               <label id="createDate" class=" control-label">$!{orderCreateDate}</label>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">商品信息：</label>
+           <div class="col-sm-8">
+                   <table id="dataTable" ></table>
+           </div>
+       </div>
+       <div class="form-group"><label class="col-sm-4 control-label">总金额(单位/元)：</label>
+           <div class="col-sm-8">
+               <!--<input value="$!{shopOrder.orderTotal}" onload="showTotal()" id="orderTotal" class="col-sm-6 form-control" style="background-color:transparent" readonly="true">-->
+               <label id="orderTotal"  class="control-label">$!{orderTotal}</label>
+           </div>
+       </div>
+        <div class="form-group"><label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8">
+                <div class="col-sm-12 text-right">
+				        <button #if($!{shopOrder.orderState}==4) type="button" onclick="cancelOrderDetail()" #else type="submit"  #end class="btn btn-info" >确定</button>
+				        <button type="button" class="btn btn-info" onclick="cancelOrderDetail()" >取消</button>
+                </div>
+            </div>
+        </div>
+       <!--<div class="form-group"><label class="col-sm-4 control-label">分享购买金额（单位分）</label>
+           <div class="col-sm-8">
+               <input type="text" class="form-control" name="discountValue" value="$!{item.discountValue}"  >
+           </div>
+
+       </div>-->
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/jquery-ui.custom.min.js')"></script>
+<script src="#springUrl('/static/js/jquery-ui-1.10.4.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list_a.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+    $(function(){
+        $( "#createDate" ).datepicker({
+            altField: "#alternate",
+            altFormat: "DD, d MM, yy"
+        });
+
+
+    });
+
+
+    function showTotal(val){
+        var n=(val/100).toFixed(2);
+        $("#orderTotal").html(n)
+    }
+
+
+    function cancelOrderDetail(){
+        //当你在iframe页面关闭自身时
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+    }
+
+    var Request = {
+        QueryString : function(val) {
+            var uri = window.location.search;
+            var re = new RegExp("" +val+ "=([^&?]*)", "ig");
+            return ((uri.match(re))?(uri.match(re)[0].substr(val.length+1)):"");
+        }
+    }
+    /*var orderFreight = Request.QueryString("orderFreight");
+     var dateString=Request.QueryString("dateString");
+     var totalString=Request.QueryString("totalString");
+     $("#orderFreight").html(orderFreight);
+     $("#createDate").html(decodeURI(dateString));*/
+    var orderId = Request.QueryString("orderId");
+    var dataUrl = "#springUrl('/order/getShopOrderItem.html')?orderId="+orderId;
+    var dataColumns = [  {
+        field: 'shopItem.itemName',
+        title: '商品名称'
+    },{
+        field: 'shopItem.itemIconAddr',
+        title: '商品图标',
+        formatter:function(value,row,index){
+            return '<img src="'+value+'" style="display:block;width:30px;height:30px"/>';
+        }
+    }, {
+        field: 'shopItemCategory.categoryName',
+        title: '商品种类'
+    },{
+        field: 'shopItemProperties.propertyDesc',
+        title: '商品规格'
+    }, {
+        field: 'price',
+        title: '商品价格',
+        formatter:function(value,row,index){
+            return (value/100).toFixed(2);
+
+        }
+    }, {
+        field: 'count',
+        title: '数量'
+    }/*, {
+     field: 'itemTotal',
+     title: '小计',
+     formatter:function(value,row,index){
+     var p = row.price;
+     var c = row.count;
+     return ((p*c)/100).toFixed(2);
+     }
+     }*/
+    ];
+    $("#myForm").validator({
+        valid: function(form){
+            var me = this;
+            // 提交表单之前，hold住表单，防止重复提交
+            me.holdSubmit();
+            $.ajax({
+                url: "#springUrl('/order/update')",
+                data: $(form).serialize(),
+                type: "POST",
+                success: function(data){
+                    var d = JSON.parse(data);
+                    if(d.success&&d.data ){
+                        /*if(d.data==true){
+                         window.parent.location.reload();
+                         }*/
+                        window.parent.location.reload();
+                        //当你在iframe页面关闭自身时
+                        //var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        //parent.layer.close(index); //再执行关闭
+                    } else {
+                        //失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                        me.holdSubmit(false);
+                    }
+                }
+            });
+        }
+    });
+
+
+
+</script>
+</body>
+</html>
