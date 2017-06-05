@@ -1,0 +1,13 @@
+# Common
+.DS_Store
+.idea
+.settings
+.springBeans
+
+# IDEA
+*.iml
+
+# Eclipse
+.classpath
+.project
+target/
