@@ -17,7 +17,9 @@ public class redisUtil {
     }
 
     //Redis服务器IP
-    private static String ADDR = "ip";
+    private static String ADDR = "106.14.239.123";
+//    //Redis服务器IP
+//    private static String ADDR = "ip";
     //Redis的端口号
     private static int PORT = 6379;
     //可用连接实例的最大数目，默认值为8；
