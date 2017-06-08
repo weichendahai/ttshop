@@ -33,3 +33,4 @@ Servers/
 .rar
 
 .externalToolBuilders/
+*.log
