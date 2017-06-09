@@ -170,7 +170,8 @@ public class ShopHotItemServiceImpl extends BaseServiceImpl<ShopHotItemMapper, S
                 ShopHotItem shopBanner = JSON.parseObject(hotString, ShopHotItem.class);
                 hot_items.put("item_id", shopBanner.getItemId());
                 ShopItem si = shopItemMapper.selectById(shopBanner.getItemId());
-                if (si.getItemState()==0){
+//                if (si.getItemState()==0){
+                if (si.getItemState()==1){
                     hot_items.put("item_state",1);
                 }else {
                     hot_items.put("item_state","");
