@@ -11,8 +11,8 @@
 		class="com.baomidou.framework.velocity.VelocityPropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>classpath:properties/jdbc.properties</value>
-				<value>classpath:properties/wxchat.properties</value>
+				<value>classpath:jdbc.properties</value>
+				<value>classpath:wxchat.properties</value>
 			</list>
 		</property>
 	</bean>

@@ -188,16 +188,20 @@
 
 	<profiles>
 		<profile>
-			<id>jdk16</id>
+			<id>dev</id>
+			<properties>
+				<env>dev</env>
+			</properties>
+			<!-- 是否默认 -->
 			<activation>
 				<activeByDefault>true</activeByDefault>
-				<jdk>1.6</jdk>
 			</activation>
+		</profile>
+		<profile>
+			<!-- 生产环境 -->
+			<id>online</id>
 			<properties>
-				<maven.compiler.source>1.6</maven.compiler.source>
-				<maven.compiler.target>1.6</maven.compiler.target>
-				<maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
-				<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+				<env>online</env>
 			</properties>
 		</profile>
 	</profiles>
@@ -213,6 +217,9 @@
 			</resource>
 			<resource>
 				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>src/main/resources-env/${env}</directory>
 			</resource>
 		</resources>
 		<plugins>

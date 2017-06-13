@@ -14,7 +14,8 @@
 	<bean id="velocityConfig"
 		class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
 		<property name="resourceLoaderPath" value="/WEB-INF/views/" />
-		<property name="configLocation" value="classpath:properties/velocity.properties" />
+		<!--<property name="configLocation" value="classpath:properties/velocity.properties" />-->
+		<property name="configLocation" value="classpath:velocity.properties" />
 	</bean>
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.velocity.VelocityLayoutViewResolver">
@@ -49,9 +50,13 @@
 	<!-- 获取ApplicationContext上下文 -->
 	<bean id="springContextHolder" class="com.baomidou.framework.spring.SpringContextHolder" />
 
+	<!--&lt;!&ndash; KISSO 初始化 &ndash;&gt;-->
+	<!--<bean id="kissoInit" class="com.baomidou.kisso.web.WebKissoConfigurer" init-method="initKisso">-->
+		<!--<property name="ssoPropPath" value="properties/sso.properties" />-->
+	<!--</bean>-->
 	<!-- KISSO 初始化 -->
 	<bean id="kissoInit" class="com.baomidou.kisso.web.WebKissoConfigurer" init-method="initKisso">
-		<property name="ssoPropPath" value="properties/sso.properties" />
+		<property name="ssoPropPath" value="sso.properties" />
 	</bean>
 	
 	<mvc:interceptors>
